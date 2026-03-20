@@ -1,0 +1,427 @@
+{
+  "metadata": {
+    "version": 1,
+    "language": "en",
+    "notes": [
+      "Unless specified otherwise, start unilateral exercises with the left side.",
+      "Progress markers: up = improved from previous workout, same = maintained, down = lower than previous workout.",
+      "MBA X means one extra set with X kg less weight.",
+      "DSX means drop set with X kg immediately after the final set."
+    ]
+  },
+  "schedule": [
+    {
+      "day": "Push A",
+      "muscle_groups": ["chest", "shoulders", "triceps"],
+      "is_rest_day": false,
+      "exercises": [
+        {
+          "name": "Dips",
+          "sets": 2,
+          "reps": "11",
+          "load": "Bodyweight + 15 kg",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Weighted push-ups", "Machine chest press"]
+        },
+        {
+          "name": "Dumbbell lateral raises (seated)",
+          "sets": 2,
+          "reps": "6",
+          "load": "16 kg each",
+          "progress": "up",
+          "progress_note": "+2 kg",
+          "alternatives": ["Cable lateral raises", "Machine deltoid raise"]
+        },
+        {
+          "name": "Cable triceps pushdown",
+          "sets": 2,
+          "reps": "10",
+          "load": "32.5 kg",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Overhead cable triceps extension", "Skull crushers"]
+        },
+        {
+          "name": "Pec deck",
+          "sets": 2,
+          "reps": "6",
+          "load": "100 kg",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Cable fly (standing)", "Dumbbell fly"]
+        },
+        {
+          "name": "Incline dumbbell press",
+          "sets": 2,
+          "reps": "10",
+          "load": "32 kg each",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Incline barbell press", "Incline machine press"]
+        },
+        {
+          "name": "Cable triceps pushdown (bar attachment)",
+          "sets": 2,
+          "reps": "8",
+          "load": "35 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Rope pushdown", "Close-grip bench press"]
+        },
+        {
+          "name": "Machine deltoid raise (optional if time permits)",
+          "sets": 2,
+          "reps": "9",
+          "load": "46 kg",
+          "progress": "same",
+          "alternatives": ["Seated lateral raise", "Cable lateral raise"]
+        }
+      ]
+    },
+    {
+      "day": "Pull A",
+      "muscle_groups": ["back", "biceps", "rear delts"],
+      "is_rest_day": false,
+      "notes": ["Use straps.", "Include Kelso shrugs where specified."],
+      "exercises": [
+        {
+          "name": "T-bar row (neutral grip)",
+          "sets": 2,
+          "reps": "9",
+          "load": "50 kg",
+          "progress": "same",
+          "alternatives": ["Chest-supported row", "Barbell row"]
+        },
+        {
+          "name": "Preacher curls",
+          "sets": 2,
+          "reps": "9",
+          "load": "40 kg",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Machine preacher curl", "Cable curl"]
+        },
+        {
+          "name": "Seated row machine",
+          "sets": 2,
+          "reps": "6",
+          "load": "80 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Cable row", "Single-arm dumbbell row"]
+        },
+        {
+          "name": "Cross-body dumbbell curls",
+          "sets": 2,
+          "reps": "8",
+          "load": "22 kg each",
+          "progress": "same",
+          "alternatives": ["Hammer curls", "Cable hammer curls"]
+        },
+        {
+          "name": "Lat pulldown",
+          "sets": 2,
+          "reps": "12",
+          "load": "45 kg per side",
+          "progress": "same",
+          "alternatives": ["Pull-ups", "Machine lat pulldown"]
+        },
+        {
+          "name": "Overhead face pulls",
+          "sets": 3,
+          "reps": "10",
+          "load": "25 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Rear delt cable fly", "Reverse pec deck"]
+        }
+      ]
+    },
+    {
+      "day": "Legs A",
+      "muscle_groups": ["quads", "glutes", "calves"],
+      "is_rest_day": false,
+      "notes": ["Time-limited session."],
+      "exercises": [
+        {
+          "name": "Back squat (full depth)",
+          "sets": 2,
+          "reps": "8",
+          "load": "80 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Hack squat", "Front squat"]
+        },
+        {
+          "name": "Walking lunges",
+          "sets": 2,
+          "reps": "7 steps per side",
+          "load": "45 kg barbell",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Dumbbell lunges", "Split squats"]
+        },
+        {
+          "name": "Leg extension",
+          "sets": 2,
+          "reps": "12",
+          "load": "100 kg",
+          "progress": "up",
+          "progress_note": "+4 kg",
+          "alternatives": ["Sissy squat", "Spanish squat"]
+        },
+        {
+          "name": "Standing calf raise machine",
+          "sets": 3,
+          "reps": "8",
+          "load": "70 kg",
+          "progress": "up",
+          "progress_note": "+5 kg",
+          "alternatives": ["Seated calf raise", "Leg press calf raises"]
+        }
+      ]
+    },
+    {
+      "day": "Push B",
+      "muscle_groups": ["chest", "shoulders", "triceps"],
+      "is_rest_day": false,
+      "exercises": [
+        {
+          "name": "Incline dumbbell press",
+          "sets": 2,
+          "reps": "12",
+          "load": "32 kg each",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Incline machine press", "Incline barbell press"]
+        },
+        {
+          "name": "Cable triceps pushdown (bar attachment)",
+          "sets": 2,
+          "reps": "12",
+          "load": "35 kg",
+          "progress": "same",
+          "alternatives": ["Rope pushdown", "Overhead rope extension"]
+        },
+        {
+          "name": "Seated barbell overhead press",
+          "sets": 2,
+          "reps": "7",
+          "load": "50 kg",
+          "progress": "same",
+          "alternatives": ["Machine shoulder press", "Dumbbell shoulder press"]
+        },
+        {
+          "name": "Cable lateral raises",
+          "sets": 2,
+          "reps": "8",
+          "load": "7.5 kg",
+          "progress": "same",
+          "alternatives": ["Seated dumbbell lateral raise", "Machine deltoid raise"]
+        },
+        {
+          "name": "Dips",
+          "sets": 2,
+          "reps": "to failure",
+          "load": "Bodyweight + 15 kg",
+          "progress": "up",
+          "progress_note": "+1 rep total",
+          "alternatives": ["Close-grip push-ups", "Bench dips"]
+        },
+        {
+          "name": "Machine deltoid raise",
+          "sets": 2,
+          "reps": "9",
+          "load": "46 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Cable lateral raise", "Seated lateral raise"]
+        }
+      ]
+    },
+    {
+      "day": "Pull B",
+      "muscle_groups": ["back", "biceps", "rear delts"],
+      "is_rest_day": false,
+      "notes": ["Use straps.", "Include Kelso shrugs where specified."],
+      "exercises": [
+        {
+          "name": "Cable pullovers",
+          "sets": 2,
+          "reps": "10",
+          "load": "30 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Dumbbell pullover", "Straight-arm lat pulldown"]
+        },
+        {
+          "name": "Lat pulldown",
+          "sets": 2,
+          "reps": "8",
+          "load": "50 kg per side",
+          "progress": "up",
+          "progress_note": "+5 kg",
+          "alternatives": ["Pull-ups", "Machine pulldown"]
+        },
+        {
+          "name": "Machine vertical row",
+          "sets": 2,
+          "reps": "9",
+          "load": "95 kg",
+          "progress": "up",
+          "progress_note": "+5 kg",
+          "alternatives": ["Chest-supported row", "Cable row"]
+        },
+        {
+          "name": "Hammer curls",
+          "sets": 2,
+          "reps": "8",
+          "load": "22 kg each",
+          "progress": "same",
+          "alternatives": ["Cross-body curls", "Rope hammer curls"]
+        },
+        {
+          "name": "Machine rear delt fly",
+          "sets": 2,
+          "reps": "8",
+          "load": "68 kg",
+          "progress": "up",
+          "progress_note": "+4 kg",
+          "alternatives": ["Reverse pec deck", "Cable rear delt fly"]
+        },
+        {
+          "name": "Cable biceps curls",
+          "sets": 2,
+          "reps": "6",
+          "load": "35 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Preacher curls", "EZ-bar curls"]
+        }
+      ]
+    },
+    {
+      "day": "Legs B",
+      "muscle_groups": ["hamstrings", "glutes", "calves"],
+      "is_rest_day": false,
+      "notes": ["Use straps where needed."],
+      "exercises": [
+        {
+          "name": "Hip thrust machine",
+          "sets": 2,
+          "reps": "10",
+          "load": "60 kg",
+          "progress": "same",
+          "alternatives": ["Barbell hip thrust", "Glute bridge"]
+        },
+        {
+          "name": "Barbell Romanian deadlift (Smith machine)",
+          "sets": 2,
+          "reps": "8",
+          "load": "80 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Dumbbell RDL", "Conventional RDL"]
+        },
+        {
+          "name": "Lying leg curls",
+          "sets": 2,
+          "reps": "8",
+          "load": "80 kg",
+          "progress": "same",
+          "alternatives": ["Seated leg curl", "Nordic curl"]
+        },
+        {
+          "name": "Machine leg press",
+          "sets": 2,
+          "reps": "to failure",
+          "load": "164 kg",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Hack squat", "High-foot leg press"]
+        },
+        {
+          "name": "Standing calf raise machine",
+          "sets": 3,
+          "reps": "12",
+          "load": "65 kg",
+          "progress": "up",
+          "progress_note": "+2 reps",
+          "alternatives": ["Seated calf raise", "Donkey calf raise"]
+        }
+      ]
+    },
+    {
+      "day": "Abs",
+      "muscle_groups": ["abdominals", "hip flexors"],
+      "is_rest_day": false,
+      "notes": ["Pick 2 to 3 exercises depending on time."],
+      "exercises": [
+        {
+          "name": "Crunch machine",
+          "sets": 2,
+          "reps": "11",
+          "load": "68 kg",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Cable crunch", "Weighted floor crunch"]
+        },
+        {
+          "name": "Cable crunches",
+          "sets": 2,
+          "reps": "8",
+          "load": "50 kg",
+          "progress": "same",
+          "alternatives": ["Machine crunch", "Ab wheel rollout"]
+        },
+        {
+          "name": "Hanging leg raises",
+          "sets": 2,
+          "reps": "15",
+          "load": "Bodyweight",
+          "progress": "same",
+          "alternatives": ["Captain's chair leg raises", "Toes-to-bar progression"]
+        },
+        {
+          "name": "Decline leg raises",
+          "sets": 2,
+          "reps": "7",
+          "load": "Bodyweight",
+          "progress": "up",
+          "progress_note": "+1 rep",
+          "alternatives": ["Flat leg raises", "Reverse crunches"]
+        }
+      ]
+    },
+    {
+      "day": "Cardio",
+      "muscle_groups": [],
+      "is_rest_day": false,
+      "exercises": [
+        {
+          "name": "Stairmaster",
+          "duration": "25 min",
+          "intensity": "45 steps per minute"
+        },
+        {
+          "name": "Stationary bike",
+          "duration": "25 min",
+          "intensity": "Level 12"
+        }
+      ]
+    },
+    {
+      "day": "Rest Day",
+      "muscle_groups": [],
+      "is_rest_day": true,
+      "exercises": []
+    }
+  ],
+  "personal_records": [
+    {
+      "exercise": "Bench press",
+      "record": "100 kg x 1"
+    }
+  ]
+}
