@@ -71,6 +71,7 @@ import com.mateoviscarra.doitall.data.persist.ResolvedDayUi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -88,6 +89,7 @@ fun WorkoutDetailScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var isSyncing by remember { mutableStateOf(false) }
+    var showScheduleDialog by remember { mutableStateOf(false) }
 
     val initialResolved = remember(workoutDay, workoutPlan) {
         ResolvedDayUi(
@@ -133,33 +135,7 @@ fun WorkoutDetailScreen(
                                     }
                                     return@IconButton
                                 }
-                                isSyncing = true
-                                scope.launch {
-                                    val exerciseNames = workoutDay.slots.mapNotNull { slot ->
-                                        val exerciseId = slot.exerciseIds.firstOrNull()
-                                        val def = exerciseId?.let { workoutPlan.catalog[it] }
-                                        def?.name
-                                    }.take(3)
-                                    val title = "$dayKey: ${exerciseNames.joinToString(", ")}"
-                                    val description = "${workoutDay.slots.size} exercises"
-
-                                    val result = calendarManager.createWorkoutEvent(
-                                        title = title,
-                                        date = LocalDate.now().plusDays(1),
-                                        startHour = 9,
-                                        durationMinutes = 60,
-                                        description = description
-                                    )
-                                    result.fold(
-                                        onSuccess = {
-                                            snackbarHostState.showSnackbar("Added to Google Calendar!")
-                                        },
-                                        onFailure = {
-                                            snackbarHostState.showSnackbar("Failed to sync: ${it.message}")
-                                        }
-                                    )
-                                    isSyncing = false
-                                }
+                                showScheduleDialog = true
                             },
                             enabled = !isSyncing
                         ) {
@@ -268,6 +244,56 @@ fun WorkoutDetailScreen(
                 }
             }
         }
+    }
+
+    if (showScheduleDialog) {
+        WorkoutScheduleDialog(
+            onDismiss = { showScheduleDialog = false },
+            onConfirm = { config ->
+                showScheduleDialog = false
+                isSyncing = true
+                scope.launch {
+                    val exerciseNames = workoutDay.slots.mapNotNull { slot ->
+                        val exerciseId = slot.exerciseIds.firstOrNull()
+                        val def = exerciseId?.let { workoutPlan.catalog[it] }
+                        def?.name
+                    }.take(3)
+                    val title = "$dayKey: ${exerciseNames.joinToString(", ")}"
+                    val description = "${workoutDay.slots.size} exercises"
+
+                    val (date, startHour, startMinute) = if (config.useCustomTime) {
+                        Triple(config.customDate, config.customStartTime.hour, config.customStartTime.minute)
+                    } else {
+                        val now = LocalTime.now()
+                        if (config.useCurrentTimeAs == CurrentTimeReference.END) {
+                            val endTime = now
+                            val startTime = endTime.minusMinutes(config.durationMinutes.toLong())
+                            Triple(LocalDate.now(), startTime.hour, startTime.minute)
+                        } else {
+                            Triple(LocalDate.now(), now.hour, now.minute)
+                        }
+                    }
+
+                    val result = calendarManager.createWorkoutEvent(
+                        title = title,
+                        date = date,
+                        startHour = startHour,
+                        startMinute = startMinute,
+                        durationMinutes = config.durationMinutes,
+                        description = description
+                    )
+                    result.fold(
+                        onSuccess = {
+                            snackbarHostState.showSnackbar("Added to Google Calendar!")
+                        },
+                        onFailure = {
+                            snackbarHostState.showSnackbar("Failed to sync: ${it.message}")
+                        }
+                    )
+                    isSyncing = false
+                }
+            }
+        )
     }
 }
 

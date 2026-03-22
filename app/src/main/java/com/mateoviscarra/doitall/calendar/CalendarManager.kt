@@ -9,6 +9,8 @@ import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.calendar.Calendar
+import com.google.api.services.calendar.model.CalendarList
+import com.google.api.services.calendar.model.CalendarListEntry
 import com.google.api.services.calendar.model.Event
 import com.google.api.services.calendar.model.EventDateTime
 import com.google.api.services.calendar.model.EventReminder
@@ -29,6 +31,14 @@ data class CalendarAuthState(
     val isConnected: Boolean,
     val email: String? = null,
     val expiresAt: Long? = null
+)
+
+data class CalendarInfo(
+    val id: String,
+    val summary: String,
+    val description: String?,
+    val backgroundColor: String?,
+    val foregroundColor: String?
 )
 
 class CalendarManager(private val context: Context) {
@@ -59,6 +69,7 @@ class CalendarManager(private val context: Context) {
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_TOKEN_EXPIRY = "token_expiry"
         private const val KEY_EMAIL = "user_email"
+        private const val KEY_SELECTED_CALENDAR = "selected_calendar_id"
     }
 
     fun saveCredentials(credentials: CalendarCredentials) {
@@ -209,6 +220,41 @@ class CalendarManager(private val context: Context) {
         calendarService = null
     }
 
+    fun getSelectedCalendarId(): String {
+        return prefs.getString(KEY_SELECTED_CALENDAR, "primary") ?: "primary"
+    }
+
+    fun setSelectedCalendarId(calendarId: String) {
+        prefs.edit().putString(KEY_SELECTED_CALENDAR, calendarId).apply()
+    }
+
+    suspend fun getAvailableCalendars(): Result<List<CalendarInfo>> = withContext(Dispatchers.IO) {
+        try {
+            ensureValidToken().getOrThrow()
+
+            val service = calendarService ?: createCalendarService().also { calendarService = it }
+
+            val calendarList = service.calendarList().list()
+                .setMaxResults(100)
+                .setShowHidden(false)
+                .execute()
+
+            val calendars = calendarList.items?.map { entry ->
+                CalendarInfo(
+                    id = entry.id ?: "",
+                    summary = entry.summary ?: "Unknown",
+                    description = entry.description,
+                    backgroundColor = entry.backgroundColor,
+                    foregroundColor = entry.foregroundColor
+                )
+            } ?: emptyList()
+
+            Result.success(calendars)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun createWorkoutEvent(
         title: String,
         date: LocalDate,
@@ -248,7 +294,7 @@ class CalendarManager(private val context: Context) {
                 .setUseDefault(false)
                 .setOverrides(listOf(reminders))
 
-            val calendarId = "primary"
+            val calendarId = getSelectedCalendarId()
             val createdEvent = service.events().insert(calendarId, event).execute()
 
             Result.success(createdEvent.id)
