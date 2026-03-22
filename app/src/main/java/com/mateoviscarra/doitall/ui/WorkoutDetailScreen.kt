@@ -540,21 +540,20 @@ private fun formatWeight(log: ExerciseLogState): String {
             val unitLabel = if (log.weightUnit == WeightUnit.LBS) {
                 if (num != null && num == 1.0) "lb" else "lbs"
             } else {
-                if (num != null && num == 1.0) "kg" else "kgs"
+                "kg"
             }
-            "Bodyweight + $weightValue $unitLabel"
+            "$weightValue $unitLabel"
         }
         weightValue.isEmpty() -> "—"
         else -> {
-            // If weight already contains a unit label (from old freeform data), show as-is
-            val hasUnit = weightValue.contains(Regex("""(?i)(kg|kgs|lbs?|lb)"""))
+            val hasUnit = weightValue.contains(Regex("""(?i)(kg|kgs|lbs?|lb|each|per ?side)"""))
             if (hasUnit) weightValue
             else {
                 val num = weightValue.toDoubleOrNull()
                 val unitLabel = if (log.weightUnit == WeightUnit.LBS) {
                     if (num != null && num == 1.0) "lb" else "lbs"
                 } else {
-                    if (num != null && num == 1.0) "kg" else "kgs"
+                    "kg"
                 }
                 "$weightValue $unitLabel"
             }

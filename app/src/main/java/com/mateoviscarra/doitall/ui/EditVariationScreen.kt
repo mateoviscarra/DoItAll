@@ -323,19 +323,22 @@ private fun SetsWeightRepsSection(
         modifier = Modifier.fillMaxWidth()
     )
 
-    // Feature 1: kg / lbs toggle using FilterChip
-    Text(text = "Unit", style = MaterialTheme.typography.labelLarge)
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(
-            selected = state.weightUnit == WeightUnit.KG,
-            onClick = { onChange(state.copy(weightUnit = WeightUnit.KG)) },
-            label = { Text("kg") }
-        )
-        FilterChip(
-            selected = state.weightUnit == WeightUnit.LBS,
-            onClick = { onChange(state.copy(weightUnit = WeightUnit.LBS)) },
-            label = { Text("lbs") }
-        )
+    // Feature 1: kg / lbs toggle using FilterChip — only show if weight doesn't already have a unit
+    val hasWeightUnit = weightText.contains(Regex("""(?i)(kg|kgs|lbs?|each|per ?side)"""))
+    if (!hasWeightUnit) {
+        Text(text = "Unit", style = MaterialTheme.typography.labelLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = state.weightUnit == WeightUnit.KG,
+                onClick = { onChange(state.copy(weightUnit = WeightUnit.KG)) },
+                label = { Text("kg") }
+            )
+            FilterChip(
+                selected = state.weightUnit == WeightUnit.LBS,
+                onClick = { onChange(state.copy(weightUnit = WeightUnit.LBS)) },
+                label = { Text("lbs") }
+            )
+        }
     }
 
     RowCheckbox(
