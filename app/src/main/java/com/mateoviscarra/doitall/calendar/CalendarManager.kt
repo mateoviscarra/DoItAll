@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
+import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.calendar.Calendar
@@ -14,7 +14,6 @@ import com.google.api.services.calendar.model.EventDateTime
 import com.google.api.services.calendar.model.EventReminder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.StringReader
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -117,7 +116,71 @@ class CalendarManager(private val context: Context) {
                 .putLong(KEY_TOKEN_EXPIRY, expiryTime)
                 .apply()
 
-            calendarService = createCalendarService()
+            calendarService = null
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun createRequestInitializer(): HttpRequestInitializer {
+        return HttpRequestInitializer { request ->
+            val accessToken = securePrefs.getString(KEY_ACCESS_TOKEN, null) ?: ""
+            if (accessToken.isNotEmpty()) {
+                request.headers.set("Authorization", "Bearer $accessToken")
+            }
+        }
+    }
+
+    private fun createCalendarService(): Calendar {
+        val transport = NetHttpTransport()
+        val jsonFactory = GsonFactory.getDefaultInstance()
+
+        return Calendar.Builder(transport, jsonFactory, createRequestInitializer())
+            .setApplicationName("DoItAll")
+            .build()
+    }
+
+    private suspend fun ensureValidToken(): Result<Unit> {
+        val expiryTime = securePrefs.getLong(KEY_TOKEN_EXPIRY, 0)
+        val refreshToken = securePrefs.getString(KEY_REFRESH_TOKEN, null) ?: ""
+
+        if (refreshToken.isEmpty()) {
+            return Result.failure(Exception("No refresh token available"))
+        }
+
+        if (System.currentTimeMillis() < expiryTime - 60000) {
+            return Result.success(Unit)
+        }
+
+        return try {
+            val clientId = securePrefs.getString(KEY_CLIENT_ID, null)
+                ?: return Result.failure(Exception("Client ID not configured"))
+            val clientSecret = securePrefs.getString(KEY_CLIENT_SECRET, null)
+                ?: return Result.failure(Exception("Client secret not configured"))
+
+            val transport = NetHttpTransport()
+            val jsonFactory = GsonFactory.getDefaultInstance()
+
+            val request = com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest(
+                transport,
+                jsonFactory,
+                clientId,
+                clientSecret,
+                refreshToken
+            )
+
+            val response = request.execute()
+
+            val newExpiryTime = System.currentTimeMillis() + (response.expiresInSeconds ?: 3600) * 1000
+
+            securePrefs.edit()
+                .putString(KEY_ACCESS_TOKEN, response.accessToken)
+                .putLong(KEY_TOKEN_EXPIRY, newExpiryTime)
+                .apply()
+
+            calendarService = null
 
             Result.success(Unit)
         } catch (e: Exception) {
@@ -146,18 +209,6 @@ class CalendarManager(private val context: Context) {
         calendarService = null
     }
 
-    private fun createCalendarService(): Calendar {
-        val transport = NetHttpTransport()
-        val jsonFactory = GsonFactory.getDefaultInstance()
-
-        return Calendar.Builder(transport, jsonFactory) { request ->
-            val accessToken = securePrefs.getString(KEY_ACCESS_TOKEN, null)
-            if (accessToken != null) {
-                request.headers.set("Authorization", "Bearer $accessToken")
-            }
-        }.setApplicationName("DoItAll").build()
-    }
-
     suspend fun createWorkoutEvent(
         title: String,
         date: LocalDate,
@@ -167,6 +218,8 @@ class CalendarManager(private val context: Context) {
         description: String? = null
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
+            ensureValidToken().getOrThrow()
+
             val service = calendarService ?: createCalendarService().also { calendarService = it }
 
             val startDateTime = LocalDateTime.of(date.year, date.month, date.dayOfMonth, startHour, startMinute)
@@ -206,6 +259,8 @@ class CalendarManager(private val context: Context) {
 
     suspend fun getUpcomingWorkouts(maxResults: Int = 10): Result<List<Event>> = withContext(Dispatchers.IO) {
         try {
+            ensureValidToken().getOrThrow()
+
             val service = calendarService ?: createCalendarService().also { calendarService = it }
 
             val now = com.google.api.client.util.DateTime(System.currentTimeMillis())
