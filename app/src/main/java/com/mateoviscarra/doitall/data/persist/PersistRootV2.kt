@@ -54,6 +54,8 @@ private fun ExerciseLogState.toJson(): JSONObject {
         .put("usePerSetReps", usePerSetReps)
         .put("comment", comment.take(ExerciseLogState.MAX_COMMENT_LENGTH))
         .put("isCardio", isCardio)
+        .put("weightUnit", weightUnit.name.lowercase())
+        .put("isBodyweight", isBodyweight)
     if (repsSingle != null) o.put("repsSingle", repsSingle)
     if (repsPerSet != null) {
         val a = JSONArray()
@@ -68,6 +70,8 @@ private fun ExerciseLogState.toJson(): JSONObject {
 private fun parseExerciseLog(json: JSONObject): ExerciseLogState {
     val repsArr = json.optJSONArray("repsPerSet")
     val repsPerSet = if (repsArr == null) null else List(repsArr.length()) { repsArr.optInt(it) }
+    val unitStr = json.optString("weightUnit", "kg")
+    val weightUnit = if (unitStr.equals("lbs", ignoreCase = true)) WeightUnit.LBS else WeightUnit.KG
     return ExerciseLogState(
         sets = json.optInt("sets", 1).coerceAtLeast(1),
         weight = json.optString("weight", ""),
@@ -77,14 +81,20 @@ private fun parseExerciseLog(json: JSONObject): ExerciseLogState {
         comment = json.optString("comment", "").take(ExerciseLogState.MAX_COMMENT_LENGTH),
         isCardio = json.optBoolean("isCardio", false),
         duration = if (json.has("duration")) json.optString("duration").ifBlank { null } else null,
-        intensity = if (json.has("intensity")) json.optString("intensity").ifBlank { null } else null
+        intensity = if (json.has("intensity")) json.optString("intensity").ifBlank { null } else null,
+        weightUnit = weightUnit,
+        isBodyweight = json.optBoolean("isBodyweight", false)
     )
 }
 
 private fun DayLogState.toDayJson(): JSONObject {
     val slotsObj = JSONObject()
     slots.forEach { (k, v) -> slotsObj.put(k, v.toSlotJson()) }
-    return JSONObject().put("slots", slotsObj)
+    val doneArr = JSONArray()
+    doneExercises.forEach { doneArr.put(it) }
+    return JSONObject()
+        .put("slots", slotsObj)
+        .put("done", doneArr)
 }
 
 private fun SlotLogState.toSlotJson(): JSONObject {
@@ -103,7 +113,14 @@ private fun parseDayLogState(json: JSONObject): DayLogState {
             put(key, parseSlotLogState(o))
         }
     }
-    return DayLogState(slots = slots)
+    val doneArr = json.optJSONArray("done") ?: JSONArray()
+    val doneExercises = buildSet<String> {
+        for (i in 0 until doneArr.length()) {
+            val s = doneArr.optString(i)
+            if (s.isNotEmpty()) add(s)
+        }
+    }
+    return DayLogState(slots = slots, doneExercises = doneExercises)
 }
 
 private fun parseSlotLogState(json: JSONObject): SlotLogState {

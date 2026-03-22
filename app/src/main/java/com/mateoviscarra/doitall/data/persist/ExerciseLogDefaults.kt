@@ -7,20 +7,47 @@ import com.mateoviscarra.doitall.data.WorkoutSlot
 import com.mateoviscarra.doitall.data.defaultRepsInt
 import com.mateoviscarra.doitall.data.defaultSetsInt
 
+/**
+ * Parses the JSON load string to extract bodyweight flag and numeric weight.
+ * E.g. "Bodyweight + 15 kg" → isBodyweight=true, weight="15"
+ * E.g. "Bodyweight"         → isBodyweight=true, weight=""
+ * E.g. "32 kg each"         → isBodyweight=false, weight="32 kg each"
+ */
+private fun parseLoadString(load: String): Pair<Boolean, String> {
+    val trimmed = load.trim()
+    if (trimmed.equals("bodyweight", ignoreCase = true)) {
+        return true to ""
+    }
+    val bwPlusRegex = Regex("""(?i)bodyweight\s*\+\s*(.+)""")
+    val match = bwPlusRegex.find(trimmed)
+    if (match != null) {
+        // Extract the numeric part only (strip trailing unit words like "kg")
+        val rest = match.groupValues[1].trim()
+        // Keep just the number
+        val numMatch = Regex("""[\d.]+""").find(rest)
+        val numStr = numMatch?.value ?: rest
+        return true to numStr
+    }
+    return false to trimmed
+}
+
 fun defaultExerciseLog(def: ExerciseDefinition): ExerciseLogState {
     val cardio = def.duration != null
     val sets = if (cardio) 1 else def.defaultSetsInt().coerceAtLeast(1)
     val repsSingle = if (cardio) null else def.defaultRepsInt()
+    val (isBodyweight, parsedWeight) = if (cardio) false to "" else parseLoadString(def.load)
     return ExerciseLogState(
         sets = sets,
-        weight = if (cardio) "" else def.load,
+        weight = if (cardio) "" else parsedWeight,
         usePerSetReps = false,
         repsSingle = repsSingle,
         repsPerSet = null,
         comment = "",
         isCardio = cardio,
         duration = def.duration,
-        intensity = def.intensity
+        intensity = def.intensity,
+        weightUnit = WeightUnit.KG,
+        isBodyweight = isBodyweight
     )
 }
 
@@ -58,7 +85,8 @@ fun dayLogFromPersist(root: PersistRootV2, dayKey: String, day: WorkoutDay): Day
             val key = index.toString()
             val slotPersisted = persistedDay?.slots?.get(key)
             key to normalizeSlotState(slot, slotPersisted)
-        }.toMap()
+        }.toMap(),
+        doneExercises = persistedDay?.doneExercises ?: emptySet()
     )
 }
 

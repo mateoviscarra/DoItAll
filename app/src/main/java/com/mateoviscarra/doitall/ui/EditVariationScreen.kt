@@ -20,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.mateoviscarra.doitall.data.WorkoutDay
 import com.mateoviscarra.doitall.data.WorkoutPlan
 import com.mateoviscarra.doitall.data.persist.ExerciseLogState
+import com.mateoviscarra.doitall.data.persist.WeightUnit
 import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
 import com.mateoviscarra.doitall.data.persist.defaultExerciseLog
 import kotlinx.coroutines.launch
@@ -295,15 +297,46 @@ private fun SetsWeightRepsSection(
         modifier = Modifier.fillMaxWidth()
     )
 
+    // Feature 1: Bodyweight checkbox
+    RowCheckbox(
+        label = "Bodyweight exercise",
+        checked = state.isBodyweight,
+        onCheckedChange = { checked ->
+            onChange(state.copy(isBodyweight = checked))
+        }
+    )
+
+    // Feature 1: Weight field — label changes based on bodyweight
     OutlinedTextField(
         value = weightText,
         onValueChange = { v ->
             weightText = v
             onChange(state.copy(weight = v))
         },
-        label = { Text("Weight (one value for all sets)") },
+        label = {
+            Text(
+                if (state.isBodyweight) "Added weight (leave blank for bodyweight only)"
+                else "Weight"
+            )
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth()
     )
+
+    // Feature 1: kg / lbs toggle using FilterChip
+    Text(text = "Unit", style = MaterialTheme.typography.labelLarge)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = state.weightUnit == WeightUnit.KG,
+            onClick = { onChange(state.copy(weightUnit = WeightUnit.KG)) },
+            label = { Text("kg") }
+        )
+        FilterChip(
+            selected = state.weightUnit == WeightUnit.LBS,
+            onClick = { onChange(state.copy(weightUnit = WeightUnit.LBS)) },
+            label = { Text("lbs") }
+        )
+    }
 
     RowCheckbox(
         label = "One rep value per set",

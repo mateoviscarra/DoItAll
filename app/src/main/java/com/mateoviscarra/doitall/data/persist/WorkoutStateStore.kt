@@ -91,6 +91,28 @@ class WorkoutStateStore(private val context: Context) {
             ).toJsonString()
         }
     }
+
+    /** Toggles the done state for [exerciseId] on [dayKey]. */
+    suspend fun toggleExerciseDone(dayKey: String, day: WorkoutDay, exerciseId: String) {
+        dataStore.edit { prefs ->
+            val root = parsePersistRootV2(prefs[JSON_KEY_V2])
+            val current = dayLogFromPersist(root, dayKey, day)
+            val done = current.doneExercises.toMutableSet()
+            if (exerciseId in done) done.remove(exerciseId) else done.add(exerciseId)
+            val nextDay = current.copy(doneExercises = done)
+            prefs[JSON_KEY_V2] = root.withDay(dayKey, nextDay).toJsonString()
+        }
+    }
+
+    /** Clears all done entries for [dayKey]. */
+    suspend fun uncheckAllForDay(dayKey: String, day: WorkoutDay) {
+        dataStore.edit { prefs ->
+            val root = parsePersistRootV2(prefs[JSON_KEY_V2])
+            val current = dayLogFromPersist(root, dayKey, day)
+            val nextDay = current.copy(doneExercises = emptySet())
+            prefs[JSON_KEY_V2] = root.withDay(dayKey, nextDay).toJsonString()
+        }
+    }
 }
 
 private fun sanitizeExerciseLog(log: ExerciseLogState): ExerciseLogState =

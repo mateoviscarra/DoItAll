@@ -3,10 +3,13 @@ package com.mateoviscarra.doitall.ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -14,7 +17,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,7 +38,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,6 +51,7 @@ import com.mateoviscarra.doitall.data.WorkoutPlan
 import com.mateoviscarra.doitall.data.WorkoutSlot
 import com.mateoviscarra.doitall.data.persist.ExerciseLogState
 import com.mateoviscarra.doitall.data.persist.SlotLogState
+import com.mateoviscarra.doitall.data.persist.WeightUnit
 import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
 import com.mateoviscarra.doitall.data.persist.defaultDayLog
 import com.mateoviscarra.doitall.data.persist.defaultExerciseLog
@@ -96,6 +105,23 @@ fun WorkoutDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
+                    }
+                },
+                actions = {
+                    // Uncheck All button — only shown when there are done exercises
+                    if (resolved.dayLog.doneExercises.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    store.uncheckAllForDay(dayKey, workoutDay)
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.CheckCircle,
+                                contentDescription = "Uncheck all exercises"
+                            )
+                        }
                     }
                 }
             )
@@ -157,6 +183,7 @@ fun WorkoutDetailScreen(
                         slotState = slotState,
                         exerciseLogs = resolved.exerciseLogs,
                         locationsById = locationsById,
+                        doneExercises = resolved.dayLog.doneExercises,
                         onPageSelected = { page ->
                             scope.launch {
                                 store.updateSelectedPage(
@@ -169,6 +196,11 @@ fun WorkoutDetailScreen(
                         },
                         onEdit = { pageIndex ->
                             onEditVariation(slotIndex, pageIndex)
+                        },
+                        onToggleDone = { exerciseId ->
+                            scope.launch {
+                                store.toggleExerciseDone(dayKey, workoutDay, exerciseId)
+                            }
                         }
                     )
                 }
@@ -186,8 +218,10 @@ private fun ExerciseSlotRow(
     slotState: SlotLogState,
     exerciseLogs: Map<String, ExerciseLogState>,
     locationsById: Map<String, List<ExerciseLocation>>,
+    doneExercises: Set<String>,
     onPageSelected: (page: Int) -> Unit,
-    onEdit: (pageIndex: Int) -> Unit
+    onEdit: (pageIndex: Int) -> Unit,
+    onToggleDone: (exerciseId: String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -218,9 +252,12 @@ private fun ExerciseSlotRow(
                 }
         }
 
+        // Feature 2+3: Equal-height cards + edge peek for adjacent items
+        // contentPadding creates the peek gap; height(IntrinsicSize.Max) equalises card heights
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 24.dp),
             pageSpacing = 12.dp
         ) { pageIndex ->
             val exerciseId = slotState.pageBindings.getOrNull(pageIndex) ?: slot.exerciseIds[pageIndex]
@@ -236,13 +273,16 @@ private fun ExerciseSlotRow(
                 ?.distinct()
                 ?.sorted()
                 .orEmpty()
+            val isDone = exerciseId in doneExercises
 
             VariationCard(
                 displayName = displayName,
                 log = log,
                 isMainVariation = isMainVariation,
                 linkedOtherDayNames = otherDayNames,
-                onEditClick = { onEdit(pageIndex) }
+                isDone = isDone,
+                onEditClick = { onEdit(pageIndex) },
+                onToggleDone = { onToggleDone(exerciseId) }
             )
         }
     }
@@ -254,25 +294,31 @@ private fun VariationCard(
     log: ExerciseLogState,
     isMainVariation: Boolean,
     linkedOtherDayNames: List<String>,
-    onEditClick: () -> Unit
+    isDone: Boolean,
+    onEditClick: () -> Unit,
+    onToggleDone: () -> Unit
 ) {
-    val colors = CardDefaults.cardColors(
-        containerColor = if (isMainVariation) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.secondaryContainer
-        },
-        contentColor = if (isMainVariation) {
-            MaterialTheme.colorScheme.onPrimaryContainer
-        } else {
-            MaterialTheme.colorScheme.onSecondaryContainer
-        }
-    )
+    // Feature 4: More pronounced color difference between main and secondary
+    val colors = if (isMainVariation) {
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    } else {
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(), // Feature 2: fill max height within IntrinsicSize.Max row
         colors = colors,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isMainVariation) 4.dp else 1.dp
+        )
     ) {
         Column(
             modifier = Modifier
@@ -280,11 +326,44 @@ private fun VariationCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = displayName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Title row with done checkbox
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    // Feature 4: "Alt" badge for secondary variations
+                    if (!isMainVariation) {
+                        Text(
+                            text = "ALTERNATIVE",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Text(
+                        text = displayName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        // Feature 5: Strikethrough when done
+                        textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None,
+                        modifier = Modifier.alpha(if (isDone) 0.6f else 1f)
+                    )
+                }
+                // Feature 5: Done toggle button
+                IconButton(onClick = onToggleDone) {
+                    Icon(
+                        imageVector = if (isDone) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                        contentDescription = if (isDone) "Mark as not done" else "Mark as done",
+                        tint = if (isDone) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        }
+                    )
+                }
+            }
 
             if (linkedOtherDayNames.isNotEmpty()) {
                 Text(
@@ -306,8 +385,9 @@ private fun VariationCard(
                     text = "${log.sets} sets × ${formatReps(log)} reps",
                     style = MaterialTheme.typography.bodyMedium
                 )
+                // Feature 1: formatted weight with unit and bodyweight support
                 Text(
-                    text = "Weight: ${log.weight}",
+                    text = "Weight: ${formatWeight(log)}",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -316,6 +396,7 @@ private fun VariationCard(
                 Text(
                     text = log.comment,
                     style = MaterialTheme.typography.bodySmall,
+                    fontStyle = FontStyle.Italic,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -329,6 +410,39 @@ private fun VariationCard(
                     Icon(Icons.Default.Edit, contentDescription = null)
                     Text(text = "Edit variation")
                 }
+            }
+        }
+    }
+}
+
+/** Feature 1: Format weight string with unit and bodyweight support. */
+private fun formatWeight(log: ExerciseLogState): String {
+    val weightValue = log.weight.trim()
+
+    return when {
+        log.isBodyweight && weightValue.isEmpty() -> "Bodyweight"
+        log.isBodyweight -> {
+            val num = weightValue.toDoubleOrNull()
+            val unitLabel = if (log.weightUnit == WeightUnit.LBS) {
+                if (num != null && num == 1.0) "lb" else "lbs"
+            } else {
+                if (num != null && num == 1.0) "kg" else "kgs"
+            }
+            "Bodyweight + $weightValue $unitLabel"
+        }
+        weightValue.isEmpty() -> "—"
+        else -> {
+            // If weight already contains a unit label (from old freeform data), show as-is
+            val hasUnit = weightValue.contains(Regex("""(?i)(kg|kgs|lbs?|lb)"""))
+            if (hasUnit) weightValue
+            else {
+                val num = weightValue.toDoubleOrNull()
+                val unitLabel = if (log.weightUnit == WeightUnit.LBS) {
+                    if (num != null && num == 1.0) "lb" else "lbs"
+                } else {
+                    if (num != null && num == 1.0) "kg" else "kgs"
+                }
+                "$weightValue $unitLabel"
             }
         }
     }
