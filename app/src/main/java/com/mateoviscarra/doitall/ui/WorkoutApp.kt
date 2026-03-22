@@ -17,6 +17,7 @@ private const val ROUTE_DETAIL = "workout_detail"
 private const val ROUTE_EDIT = "workout_edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_CALENDAR_SETTINGS = "calendar_settings"
+private const val ROUTE_CUSTOM = "custom_workout"
 
 fun workoutDetailRoute(index: Int) = "$ROUTE_DETAIL/$index"
 
@@ -42,6 +43,9 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
                 },
                 onSettingsClick = {
                     navController.navigate(ROUTE_SETTINGS)
+                },
+                onCustomClick = {
+                    navController.navigate(ROUTE_CUSTOM)
                 }
             )
         }
@@ -101,6 +105,12 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
             com.mateoviscarra.doitall.calendar.CalendarSettingsScreen(
                 onBack = { navController.popBackStack() },
                 calendarManager = calendarManager
+            )
+        }
+        composable(ROUTE_CUSTOM) {
+            CustomWorkoutScreen(
+                calendarManager = calendarManager,
+                onBack = { navController.popBackStack() }
             )
         }
     }
