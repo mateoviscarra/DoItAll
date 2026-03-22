@@ -17,26 +17,33 @@ object WorkoutRepository {
 
         val nameToId = linkedMapOf<String, String>()
         val catalog = linkedMapOf<String, ExerciseDefinition>()
+        val usedIds = mutableSetOf<String>()
 
-        fun registerExercise(rawName: String, jsonTemplate: JSONObject?): String {
+        fun registerExercise(rawName: String, jsonTemplate: JSONObject?, forceUnique: Boolean = false): String {
             val key = rawName.trim().lowercase(Locale.US)
-            return nameToId.getOrPut(key) {
-                val displayName = rawName.trim()
-                val newId = buildStableExerciseId(displayName, catalog.keys.toMutableSet())
-                catalog[newId] = if (jsonTemplate != null) {
-                    exerciseDefinitionFromWorkoutJson(newId, displayName, jsonTemplate)
-                } else {
-                    placeholderExerciseDefinition(newId, displayName)
-                }
-                newId
+            val displayName = rawName.trim()
+
+            if (!forceUnique) {
+                val existing = nameToId[key]
+                if (existing != null) return existing
             }
+
+            val newId = buildStableExerciseId(displayName, usedIds)
+            usedIds.add(newId)
+            nameToId[key] = newId
+            catalog[newId] = if (jsonTemplate != null) {
+                exerciseDefinitionFromWorkoutJson(newId, displayName, jsonTemplate)
+            } else {
+                placeholderExerciseDefinition(newId, displayName)
+            }
+            return newId
         }
 
         fun parseSlot(exerciseObj: JSONObject): WorkoutSlot {
             val mainName = exerciseObj.optString("name", "Unknown")
             val mainId = registerExercise(mainName, exerciseObj)
             val altNames = jsonStringArray(exerciseObj.optJSONArray("alternatives"))
-            val altIds = altNames.map { registerExercise(it, null) }
+            val altIds = altNames.map { registerExercise(it, null, forceUnique = true) }
             return WorkoutSlot(exerciseIds = listOf(mainId) + altIds)
         }
 

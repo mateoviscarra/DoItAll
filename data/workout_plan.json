@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": 1,
+    "version": 2,
     "language": "en",
     "notes": [
       "Unless specified otherwise, start unilateral exercises with the left side.",
@@ -17,65 +17,52 @@
       "exercises": [
         {
           "name": "Dips",
-          "sets": 2,
-          "reps": "11",
+          "sets": 3,
+          "reps": "10",
           "load": "Bodyweight + 15 kg",
           "progress": "up",
           "progress_note": "+2 reps",
           "alternatives": ["Weighted push-ups", "Machine chest press"]
         },
         {
-          "name": "Dumbbell lateral raises (seated)",
-          "sets": 2,
+          "name": "Barbell bench press",
+          "sets": 3,
           "reps": "6",
-          "load": "16 kg each",
-          "progress": "up",
-          "progress_note": "+2 kg",
-          "alternatives": ["Cable lateral raises", "Machine deltoid raise"]
-        },
-        {
-          "name": "Cable triceps pushdown",
-          "sets": 2,
-          "reps": "10",
-          "load": "32.5 kg",
-          "progress": "up",
-          "progress_note": "+2 reps",
-          "alternatives": ["Overhead cable triceps extension", "Skull crushers"]
-        },
-        {
-          "name": "Pec deck",
-          "sets": 2,
-          "reps": "6",
-          "load": "100 kg",
-          "progress": "up",
-          "progress_note": "+2 reps",
-          "alternatives": ["Cable fly (standing)", "Dumbbell fly"]
+          "load": "80 kg",
+          "progress": "same",
+          "alternatives": ["Machine chest press", "Dumbbell bench press"]
         },
         {
           "name": "Incline dumbbell press",
           "sets": 2,
           "reps": "10",
           "load": "32 kg each",
-          "progress": "up",
-          "progress_note": "+2 reps",
+          "progress": "same",
           "alternatives": ["Incline barbell press", "Incline machine press"]
         },
         {
-          "name": "Cable triceps pushdown (bar attachment)",
-          "sets": 2,
-          "reps": "8",
-          "load": "35 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
-          "alternatives": ["Rope pushdown", "Close-grip bench press"]
+          "name": "Seated dumbbell lateral raises",
+          "sets": 3,
+          "reps": "15",
+          "load": "14 kg each",
+          "progress": "same",
+          "alternatives": ["Cable lateral raises", "Machine deltoid raise"]
         },
         {
-          "name": "Machine deltoid raise (optional if time permits)",
-          "sets": 2,
-          "reps": "9",
-          "load": "46 kg",
+          "name": "Overhead cable triceps extension",
+          "sets": 3,
+          "reps": "12",
+          "load": "30 kg",
           "progress": "same",
-          "alternatives": ["Seated lateral raise", "Cable lateral raise"]
+          "alternatives": ["Skull crushers", "Overhead dumbbell extension"]
+        },
+        {
+          "name": "Cable triceps pushdown",
+          "sets": 2,
+          "reps": "10",
+          "load": "35 kg",
+          "progress": "same",
+          "alternatives": ["Rope pushdown", "Dips"]
         }
       ]
     },
@@ -94,12 +81,19 @@
           "alternatives": ["Chest-supported row", "Barbell row"]
         },
         {
+          "name": "Pull-ups",
+          "sets": 2,
+          "reps": "8",
+          "load": "Bodyweight",
+          "progress": "same",
+          "alternatives": ["Lat pulldown", "Assisted pull-ups"]
+        },
+        {
           "name": "Preacher curls",
           "sets": 2,
           "reps": "9",
           "load": "40 kg",
-          "progress": "up",
-          "progress_note": "+2 reps",
+          "progress": "same",
           "alternatives": ["Machine preacher curl", "Cable curl"]
         },
         {
@@ -107,33 +101,15 @@
           "sets": 2,
           "reps": "6",
           "load": "80 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
+          "progress": "same",
           "alternatives": ["Cable row", "Single-arm dumbbell row"]
-        },
-        {
-          "name": "Cross-body dumbbell curls",
-          "sets": 2,
-          "reps": "8",
-          "load": "22 kg each",
-          "progress": "same",
-          "alternatives": ["Hammer curls", "Cable hammer curls"]
-        },
-        {
-          "name": "Lat pulldown",
-          "sets": 2,
-          "reps": "12",
-          "load": "45 kg per side",
-          "progress": "same",
-          "alternatives": ["Pull-ups", "Machine lat pulldown"]
         },
         {
           "name": "Overhead face pulls",
           "sets": 3,
           "reps": "10",
           "load": "25 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
+          "progress": "same",
           "alternatives": ["Rear delt cable fly", "Reverse pec deck"]
         }
       ]
@@ -146,20 +122,18 @@
       "exercises": [
         {
           "name": "Back squat (full depth)",
-          "sets": 2,
+          "sets": 3,
           "reps": "8",
           "load": "80 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
+          "progress": "same",
           "alternatives": ["Hack squat", "Front squat"]
         },
         {
           "name": "Walking lunges",
           "sets": 2,
-          "reps": "7 steps per side",
+          "reps": "10 steps per side",
           "load": "45 kg barbell",
-          "progress": "up",
-          "progress_note": "+1 rep",
+          "progress": "same",
           "alternatives": ["Dumbbell lunges", "Split squats"]
         },
         {
@@ -167,17 +141,23 @@
           "sets": 2,
           "reps": "12",
           "load": "100 kg",
-          "progress": "up",
-          "progress_note": "+4 kg",
+          "progress": "same",
           "alternatives": ["Sissy squat", "Spanish squat"]
+        },
+        {
+          "name": "Lying leg curls",
+          "sets": 2,
+          "reps": "12",
+          "load": "70 kg",
+          "progress": "same",
+          "alternatives": ["Seated leg curl", "Nordic curl"]
         },
         {
           "name": "Standing calf raise machine",
           "sets": 3,
-          "reps": "8",
+          "reps": "12",
           "load": "70 kg",
-          "progress": "up",
-          "progress_note": "+5 kg",
+          "progress": "same",
           "alternatives": ["Seated calf raise", "Leg press calf raises"]
         }
       ]
@@ -189,33 +169,32 @@
       "exercises": [
         {
           "name": "Incline dumbbell press",
-          "sets": 2,
-          "reps": "12",
+          "sets": 3,
+          "reps": "10",
           "load": "32 kg each",
-          "progress": "up",
-          "progress_note": "+2 reps",
+          "progress": "same",
           "alternatives": ["Incline machine press", "Incline barbell press"]
         },
         {
-          "name": "Cable triceps pushdown (bar attachment)",
-          "sets": 2,
-          "reps": "12",
-          "load": "35 kg",
-          "progress": "same",
-          "alternatives": ["Rope pushdown", "Overhead rope extension"]
-        },
-        {
           "name": "Seated barbell overhead press",
-          "sets": 2,
-          "reps": "7",
+          "sets": 3,
+          "reps": "6",
           "load": "50 kg",
           "progress": "same",
           "alternatives": ["Machine shoulder press", "Dumbbell shoulder press"]
         },
         {
-          "name": "Cable lateral raises",
+          "name": "Machine chest press",
           "sets": 2,
-          "reps": "8",
+          "reps": "10",
+          "load": "90 kg",
+          "progress": "same",
+          "alternatives": ["Barbell bench press", "Dumbbell bench press"]
+        },
+        {
+          "name": "Cable lateral raises",
+          "sets": 3,
+          "reps": "15",
           "load": "7.5 kg",
           "progress": "same",
           "alternatives": ["Seated dumbbell lateral raise", "Machine deltoid raise"]
@@ -223,20 +202,18 @@
         {
           "name": "Dips",
           "sets": 2,
-          "reps": "to failure",
+          "reps": "10",
           "load": "Bodyweight + 15 kg",
-          "progress": "up",
-          "progress_note": "+1 rep total",
+          "progress": "same",
           "alternatives": ["Close-grip push-ups", "Bench dips"]
         },
         {
-          "name": "Machine deltoid raise",
+          "name": "Overhead triceps extension (rope)",
           "sets": 2,
-          "reps": "9",
-          "load": "46 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
-          "alternatives": ["Cable lateral raise", "Seated lateral raise"]
+          "reps": "12",
+          "load": "30 kg",
+          "progress": "same",
+          "alternatives": ["Skull crushers", "Cable pushdown"]
         }
       ]
     },
@@ -251,8 +228,7 @@
           "sets": 2,
           "reps": "10",
           "load": "30 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
+          "progress": "same",
           "alternatives": ["Dumbbell pullover", "Straight-arm lat pulldown"]
         },
         {
@@ -260,8 +236,7 @@
           "sets": 2,
           "reps": "8",
           "load": "50 kg per side",
-          "progress": "up",
-          "progress_note": "+5 kg",
+          "progress": "same",
           "alternatives": ["Pull-ups", "Machine pulldown"]
         },
         {
@@ -269,8 +244,7 @@
           "sets": 2,
           "reps": "9",
           "load": "95 kg",
-          "progress": "up",
-          "progress_note": "+5 kg",
+          "progress": "same",
           "alternatives": ["Chest-supported row", "Cable row"]
         },
         {
@@ -286,8 +260,7 @@
           "sets": 2,
           "reps": "8",
           "load": "68 kg",
-          "progress": "up",
-          "progress_note": "+4 kg",
+          "progress": "same",
           "alternatives": ["Reverse pec deck", "Cable rear delt fly"]
         },
         {
@@ -295,8 +268,7 @@
           "sets": 2,
           "reps": "6",
           "load": "35 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
+          "progress": "same",
           "alternatives": ["Preacher curls", "EZ-bar curls"]
         }
       ]
@@ -308,46 +280,51 @@
       "notes": ["Use straps where needed."],
       "exercises": [
         {
+          "name": "Barbell Romanian deadlift",
+          "sets": 3,
+          "reps": "8",
+          "load": "80 kg",
+          "progress": "same",
+          "alternatives": ["Dumbbell RDL", "Conventional RDL"]
+        },
+        {
           "name": "Hip thrust machine",
-          "sets": 2,
+          "sets": 3,
           "reps": "10",
           "load": "60 kg",
           "progress": "same",
           "alternatives": ["Barbell hip thrust", "Glute bridge"]
         },
         {
-          "name": "Barbell Romanian deadlift (Smith machine)",
+          "name": "Machine leg press",
+          "sets": 3,
+          "reps": "12",
+          "load": "164 kg",
+          "progress": "same",
+          "alternatives": ["Hack squat", "High-foot leg press"]
+        },
+        {
+          "name": "Leg extension",
           "sets": 2,
-          "reps": "8",
-          "load": "80 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
-          "alternatives": ["Dumbbell RDL", "Conventional RDL"]
+          "reps": "12",
+          "load": "90 kg",
+          "progress": "same",
+          "alternatives": ["Sissy squat", "Spanish squat"]
         },
         {
           "name": "Lying leg curls",
           "sets": 2,
-          "reps": "8",
+          "reps": "10",
           "load": "80 kg",
           "progress": "same",
           "alternatives": ["Seated leg curl", "Nordic curl"]
-        },
-        {
-          "name": "Machine leg press",
-          "sets": 2,
-          "reps": "to failure",
-          "load": "164 kg",
-          "progress": "up",
-          "progress_note": "+2 reps",
-          "alternatives": ["Hack squat", "High-foot leg press"]
         },
         {
           "name": "Standing calf raise machine",
           "sets": 3,
           "reps": "12",
           "load": "65 kg",
-          "progress": "up",
-          "progress_note": "+2 reps",
+          "progress": "same",
           "alternatives": ["Seated calf raise", "Donkey calf raise"]
         }
       ]
@@ -361,36 +338,26 @@
         {
           "name": "Crunch machine",
           "sets": 2,
-          "reps": "11",
+          "reps": "12",
           "load": "68 kg",
-          "progress": "up",
-          "progress_note": "+1 rep",
-          "alternatives": ["Cable crunch", "Weighted floor crunch"]
-        },
-        {
-          "name": "Cable crunches",
-          "sets": 2,
-          "reps": "8",
-          "load": "50 kg",
           "progress": "same",
-          "alternatives": ["Machine crunch", "Ab wheel rollout"]
+          "alternatives": ["Cable crunch", "Weighted floor crunch"]
         },
         {
           "name": "Hanging leg raises",
           "sets": 2,
-          "reps": "15",
+          "reps": "12",
           "load": "Bodyweight",
           "progress": "same",
           "alternatives": ["Captain's chair leg raises", "Toes-to-bar progression"]
         },
         {
-          "name": "Decline leg raises",
+          "name": "Ab wheel rollout",
           "sets": 2,
-          "reps": "7",
+          "reps": "10",
           "load": "Bodyweight",
-          "progress": "up",
-          "progress_note": "+1 rep",
-          "alternatives": ["Flat leg raises", "Reverse crunches"]
+          "progress": "same",
+          "alternatives": ["Plank", "Cable crunch"]
         }
       ]
     },
