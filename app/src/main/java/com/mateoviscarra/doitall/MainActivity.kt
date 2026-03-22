@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 import com.mateoviscarra.doitall.data.WorkoutRepository
-import com.mateoviscarra.doitall.ui.WorkoutScreen
+import com.mateoviscarra.doitall.ui.WorkoutApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
 
             MaterialTheme {
                 Surface {
-                    WorkoutScreen(workoutDays = workoutPlan.schedule)
+                    WorkoutApp(workoutPlan = workoutPlan)
                 }
             }
         }

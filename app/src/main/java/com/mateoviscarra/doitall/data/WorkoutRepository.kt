@@ -28,6 +28,7 @@ object WorkoutRepository {
         val day = dayObj.optString("day", "Unknown Day")
         val isRestDay = dayObj.optBoolean("is_rest_day", false)
         val muscleGroups = jsonStringArray(dayObj.optJSONArray("muscle_groups"))
+        val notes = jsonStringArray(dayObj.optJSONArray("notes"))
 
         val exercisesArray = dayObj.optJSONArray("exercises") ?: JSONArray()
         val exercises = buildList {
@@ -41,6 +42,7 @@ object WorkoutRepository {
             day = day,
             muscleGroups = muscleGroups,
             isRestDay = isRestDay,
+            notes = notes,
             exercises = exercises
         )
     }
@@ -51,13 +53,17 @@ object WorkoutRepository {
         val reps = exerciseObj.optString("reps", "-")
         val load = exerciseObj.optString("load", "-")
         val alternatives = jsonStringArray(exerciseObj.optJSONArray("alternatives"))
+        val duration = exerciseObj.optString("duration").takeIf { it.isNotEmpty() }
+        val intensity = exerciseObj.optString("intensity").takeIf { it.isNotEmpty() }
 
         return WorkoutExercise(
             name = name,
             sets = sets,
             reps = reps,
             load = load,
-            alternatives = alternatives
+            alternatives = alternatives,
+            duration = duration,
+            intensity = intensity
         )
     }
 

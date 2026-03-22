@@ -8,6 +8,7 @@ data class WorkoutDay(
     val day: String,
     val muscleGroups: List<String>,
     val isRestDay: Boolean,
+    val notes: List<String> = emptyList(),
     val exercises: List<WorkoutExercise>
 )
 
@@ -16,5 +17,8 @@ data class WorkoutExercise(
     val sets: String,
     val reps: String,
     val load: String,
-    val alternatives: List<String>
+    val alternatives: List<String>,
+    /** Present for cardio-style entries in JSON. */
+    val duration: String? = null,
+    val intensity: String? = null
 )
