@@ -260,16 +260,34 @@ fun WorkoutDetailScreen(
                                 val def = workoutPlan.catalog[exerciseId]
                                 val log = resolved.exerciseLogs[exerciseId]
                                 val name = def?.name ?: exerciseId
-                                val sets = log?.sets?.toString() ?: def?.sets ?: "?"
-                                
-                                val repsStr = when {
-                                    log?.usePerSetReps == true && !log.repsPerSet.isNullOrEmpty() -> {
-                                        log.repsPerSet.joinToString(", ")
+
+                                val exerciseDetail = when {
+                                    // Cardio exercises: show duration and intensity
+                                    def?.duration != null || log?.isCardio == true -> {
+                                        val dur = log?.duration ?: def?.duration ?: ""
+                                        val intens = log?.intensity ?: def?.intensity
+                                        if (intens != null) "$dur, $intens" else dur
                                     }
-                                    log?.repsSingle != null -> log.repsSingle.toString()
-                                    else -> def?.reps ?: "?"
+                                    // Stretches/foam rolling: show sets and duration (reps field contains time)
+                                    def?.load == "Bodyweight" && def?.reps?.contains("sec", ignoreCase = true) == true -> {
+                                        val sets = log?.sets?.toString() ?: def?.sets ?: ""
+                                        val duration = def.reps
+                                        "$sets sets, $duration"
+                                    }
+                                    // Regular exercises: show sets × reps
+                                    else -> {
+                                        val sets = log?.sets?.toString() ?: def?.sets ?: "?"
+                                        val repsStr = when {
+                                            log?.usePerSetReps == true && !log.repsPerSet.isNullOrEmpty() -> {
+                                                log.repsPerSet.joinToString(", ")
+                                            }
+                                            log?.repsSingle != null -> log.repsSingle.toString()
+                                            else -> def?.reps ?: "?"
+                                        }
+                                        "$sets sets × $repsStr reps"
+                                    }
                                 }
-                                
+
                                 val weightStr = when {
                                     log?.isBodyweight == true -> {
                                         if (log.weight.isNotEmpty()) {
@@ -289,8 +307,12 @@ fun WorkoutDetailScreen(
                                     def?.load?.isNotEmpty() == true -> def.load
                                     else -> ""
                                 }
-                                append("$name: $sets sets × $repsStr reps")
-                                if (weightStr.isNotEmpty()) {
+
+                                append(name)
+                                if (exerciseDetail.isNotEmpty()) {
+                                    append(": $exerciseDetail")
+                                }
+                                if (weightStr.isNotEmpty() && weightStr != "Bodyweight") {
                                     append(" @ $weightStr")
                                 }
                                 if (index < doneExerciseIds.size - 1) {

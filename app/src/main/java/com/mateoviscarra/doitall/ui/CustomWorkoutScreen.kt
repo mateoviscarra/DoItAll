@@ -215,8 +215,13 @@ fun CustomWorkoutScreen(
                                 Text(
                                     text = "${exercise.sets} sets × ${exercise.reps} reps" +
                                             if (exercise.weight.isNotEmpty()) {
-                                                " @ ${exercise.weight}" +
-                                                if (exercise.isBodyweight) " Bodyweight" else " ${exercise.weightUnit.name.lowercase()}"
+                                                if (exercise.isBodyweight) {
+                                                    " @ Bodyweight + ${exercise.weight} ${exercise.weightUnit.name.lowercase()}"
+                                                } else {
+                                                    " @ ${exercise.weight} ${exercise.weightUnit.name.lowercase()}"
+                                                }
+                                            } else if (exercise.isBodyweight) {
+                                                " @ Bodyweight"
                                             } else "",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -273,8 +278,13 @@ fun CustomWorkoutScreen(
                         exercises.forEachIndexed { index, exercise ->
                             append("${exercise.name}: ${exercise.sets} sets × ${exercise.reps} reps")
                             if (exercise.weight.isNotEmpty()) {
-                                append(" @ ${exercise.weight}")
-                                if (exercise.isBodyweight) append(" Bodyweight")
+                                if (exercise.isBodyweight) {
+                                    append(" @ Bodyweight + ${exercise.weight} ${exercise.weightUnit.name.lowercase()}")
+                                } else {
+                                    append(" @ ${exercise.weight} ${exercise.weightUnit.name.lowercase()}")
+                                }
+                            } else if (exercise.isBodyweight) {
+                                append(" @ Bodyweight")
                             }
                             if (index < exercises.size - 1) append("\n")
                         }
@@ -378,27 +388,27 @@ private fun AddExerciseDialog(
                     Text("Bodyweight exercise")
                 }
                 
-                if (!isBodyweight) {
-                    OutlinedTextField(
-                        value = weight,
-                        onValueChange = { weight = it },
-                        label = { Text("Weight") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                OutlinedTextField(
+                    value = weight,
+                    onValueChange = { weight = it },
+                    label = { 
+                        Text(if (isBodyweight) "Added weight (optional)" else "Weight")
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = weightUnit == WeightUnit.KG,
+                        onClick = { weightUnit = WeightUnit.KG },
+                        label = { Text("kg") }
                     )
-                    
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(
-                            selected = weightUnit == WeightUnit.KG,
-                            onClick = { weightUnit = WeightUnit.KG },
-                            label = { Text("kg") }
-                        )
-                        FilterChip(
-                            selected = weightUnit == WeightUnit.LBS,
-                            onClick = { weightUnit = WeightUnit.LBS },
-                            label = { Text("lbs") }
-                        )
-                    }
+                    FilterChip(
+                        selected = weightUnit == WeightUnit.LBS,
+                        onClick = { weightUnit = WeightUnit.LBS },
+                        label = { Text("lbs") }
+                    )
                 }
             }
         },
