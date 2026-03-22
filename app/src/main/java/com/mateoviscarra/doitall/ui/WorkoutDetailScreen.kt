@@ -2,16 +2,16 @@ package com.mateoviscarra.doitall.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
@@ -33,35 +33,50 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mateoviscarra.doitall.data.ExerciseLocation
 import com.mateoviscarra.doitall.data.WorkoutDay
-import com.mateoviscarra.doitall.data.WorkoutExercise
-import com.mateoviscarra.doitall.data.persist.PageLogState
+import com.mateoviscarra.doitall.data.WorkoutPlan
+import com.mateoviscarra.doitall.data.WorkoutSlot
+import com.mateoviscarra.doitall.data.persist.ExerciseLogState
 import com.mateoviscarra.doitall.data.persist.SlotLogState
 import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
 import com.mateoviscarra.doitall.data.persist.defaultDayLog
+import com.mateoviscarra.doitall.data.persist.defaultExerciseLog
+import com.mateoviscarra.doitall.data.persist.mergedExerciseLogs
+import com.mateoviscarra.doitall.data.persist.PersistRootV2
+import com.mateoviscarra.doitall.data.persist.ResolvedDayUi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun WorkoutDetailScreen(
+    workoutPlan: WorkoutPlan,
     dayKey: String,
     workoutDay: WorkoutDay,
     onBack: () -> Unit,
     onEditVariation: (slotIndex: Int, pageIndex: Int) -> Unit
 ) {
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val store = remember(dayKey) { WorkoutStateStore(context.applicationContext) }
     val scope = rememberCoroutineScope()
 
-    val dayLog by store.dayLogFlow(dayKey, workoutDay.exercises).collectAsStateWithLifecycle(
-        initialValue = defaultDayLog(workoutDay.exercises)
+    val initialResolved = remember(workoutDay, workoutPlan) {
+        ResolvedDayUi(
+            dayLog = defaultDayLog(workoutDay),
+            exerciseLogs = mergedExerciseLogs(workoutPlan, PersistRootV2(emptyMap(), emptyMap()))
+        )
+    }
+
+    val resolved by store.resolvedDayFlow(dayKey, workoutDay, workoutPlan).collectAsStateWithLifecycle(
+        initialValue = initialResolved
     )
+
+    val locationsById = remember(workoutPlan) { workoutPlan.exerciseLocationsById() }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -119,7 +134,7 @@ fun WorkoutDetailScreen(
                 }
             }
 
-            if (workoutDay.exercises.isEmpty()) {
+            if (workoutDay.slots.isEmpty()) {
                 item {
                     Text(
                         text = if (workoutDay.isRestDay) {
@@ -132,17 +147,21 @@ fun WorkoutDetailScreen(
                     )
                 }
             } else {
-                itemsIndexed(workoutDay.exercises) { slotIndex, template ->
-                    val slotState = dayLog.slots[slotIndex.toString()]
+                itemsIndexed(workoutDay.slots) { slotIndex, slot ->
+                    val slotState = resolved.dayLog.slots[slotIndex.toString()]
                         ?: return@itemsIndexed
                     ExerciseSlotRow(
-                        slotLabel = "${slotIndex + 1}. ${template.name}",
+                        workoutPlan = workoutPlan,
+                        dayKey = dayKey,
+                        slot = slot,
                         slotState = slotState,
+                        exerciseLogs = resolved.exerciseLogs,
+                        locationsById = locationsById,
                         onPageSelected = { page ->
                             scope.launch {
                                 store.updateSelectedPage(
                                     dayKey = dayKey,
-                                    exercises = workoutDay.exercises,
+                                    day = workoutDay,
                                     slotIndex = slotIndex,
                                     page = page
                                 )
@@ -161,8 +180,12 @@ fun WorkoutDetailScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ExerciseSlotRow(
-    slotLabel: String,
+    workoutPlan: WorkoutPlan,
+    dayKey: String,
+    slot: WorkoutSlot,
     slotState: SlotLogState,
+    exerciseLogs: Map<String, ExerciseLogState>,
+    locationsById: Map<String, List<ExerciseLocation>>,
     onPageSelected: (page: Int) -> Unit,
     onEdit: (pageIndex: Int) -> Unit
 ) {
@@ -170,13 +193,7 @@ private fun ExerciseSlotRow(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = slotLabel,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        val pageCount = slotState.pages.size
+        val pageCount = slot.exerciseIds.size
         if (pageCount == 0) return
 
         val pagerState = rememberPagerState(
@@ -206,10 +223,25 @@ private fun ExerciseSlotRow(
             modifier = Modifier.fillMaxWidth(),
             pageSpacing = 12.dp
         ) { pageIndex ->
-            val page = slotState.pages[pageIndex]
+            val exerciseId = slotState.pageBindings.getOrNull(pageIndex) ?: slot.exerciseIds[pageIndex]
+            val def = workoutPlan.catalog[exerciseId]
+            val displayName = def?.name ?: exerciseId
+            val log = exerciseLogs[exerciseId]
+                ?: (def?.let { defaultExerciseLog(it) }
+                    ?: return@HorizontalPager)
+            val isMainVariation = exerciseId == slot.mainExerciseId
+            val otherDayNames = locationsById[exerciseId]
+                ?.filter { it.dayKey != dayKey }
+                ?.map { it.dayKey }
+                ?.distinct()
+                ?.sorted()
+                .orEmpty()
+
             VariationCard(
-                pageIndex = pageIndex,
-                page = page,
+                displayName = displayName,
+                log = log,
+                isMainVariation = isMainVariation,
+                linkedOtherDayNames = otherDayNames,
                 onEditClick = { onEdit(pageIndex) }
             )
         }
@@ -218,18 +250,19 @@ private fun ExerciseSlotRow(
 
 @Composable
 private fun VariationCard(
-    pageIndex: Int,
-    page: PageLogState,
+    displayName: String,
+    log: ExerciseLogState,
+    isMainVariation: Boolean,
+    linkedOtherDayNames: List<String>,
     onEditClick: () -> Unit
 ) {
-    val isPrimarySlot = pageIndex == 0
     val colors = CardDefaults.cardColors(
-        containerColor = if (isPrimarySlot) {
+        containerColor = if (isMainVariation) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             MaterialTheme.colorScheme.secondaryContainer
         },
-        contentColor = if (isPrimarySlot) {
+        contentColor = if (isMainVariation) {
             MaterialTheme.colorScheme.onPrimaryContainer
         } else {
             MaterialTheme.colorScheme.onSecondaryContainer
@@ -248,32 +281,40 @@ private fun VariationCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = page.selectedExerciseName,
+                text = displayName,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
 
-            if (page.isCardio) {
-                page.duration?.let {
+            if (linkedOtherDayNames.isNotEmpty()) {
+                Text(
+                    text = "Also used on: ${linkedOtherDayNames.joinToString()} — changes apply everywhere.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
+            if (log.isCardio) {
+                log.duration?.let {
                     Text(text = "Duration: $it", style = MaterialTheme.typography.bodyMedium)
                 }
-                page.intensity?.let {
+                log.intensity?.let {
                     Text(text = "Intensity: $it", style = MaterialTheme.typography.bodyMedium)
                 }
             } else {
                 Text(
-                    text = "${page.sets} sets × ${formatReps(page)} reps",
+                    text = "${log.sets} sets × ${formatReps(log)} reps",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Weight: ${page.weight}",
+                    text = "Weight: ${log.weight}",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
 
-            if (page.comment.isNotBlank()) {
+            if (log.comment.isNotBlank()) {
                 Text(
-                    text = page.comment,
+                    text = log.comment,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
@@ -293,10 +334,10 @@ private fun VariationCard(
     }
 }
 
-private fun formatReps(page: PageLogState): String {
-    return if (page.usePerSetReps) {
-        page.repsPerSet?.joinToString(", ") ?: "—"
+private fun formatReps(log: ExerciseLogState): String {
+    return if (log.usePerSetReps) {
+        log.repsPerSet?.joinToString(", ") ?: "—"
     } else {
-        page.repsSingle?.toString() ?: "—"
+        log.repsSingle?.toString() ?: "—"
     }
 }

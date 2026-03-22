@@ -47,6 +47,7 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
             val index = entry.arguments?.getInt("index") ?: return@composable
             val day = workoutPlan.schedule.getOrNull(index) ?: return@composable
             WorkoutDetailScreen(
+                workoutPlan = workoutPlan,
                 dayKey = day.day,
                 workoutDay = day,
                 onBack = { navController.popBackStack() },
@@ -68,8 +69,9 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
             val pageIndex = entry.arguments?.getInt("pageIndex") ?: return@composable
             val day = workoutPlan.schedule.getOrNull(dayIndex) ?: return@composable
             EditVariationScreen(
+                workoutPlan = workoutPlan,
                 dayKey = day.day,
-                exercises = day.exercises,
+                workoutDay = day,
                 slotIndex = slotIndex,
                 pageIndex = pageIndex,
                 store = store,

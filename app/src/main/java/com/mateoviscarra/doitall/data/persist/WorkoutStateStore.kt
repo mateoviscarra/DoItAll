@@ -1,228 +1,100 @@
 package com.mateoviscarra.doitall.data.persist
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.mateoviscarra.doitall.data.WorkoutExercise
-import com.mateoviscarra.doitall.data.catalogOptionNames
-import com.mateoviscarra.doitall.data.defaultRepsInt
-import com.mateoviscarra.doitall.data.defaultSetsInt
+import com.mateoviscarra.doitall.data.WorkoutDay
+import com.mateoviscarra.doitall.data.WorkoutPlan
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import org.json.JSONArray
-import org.json.JSONObject
 
-private val Context.workoutLogDataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "workout_log"
+private val Context.doItAllWorkoutDataStore by preferencesDataStore(name = "workout_log")
+
+private val JSON_KEY_V2 = stringPreferencesKey("workout_log_json_v2")
+
+/** Persisted slice + merged logs for one screen. */
+data class ResolvedDayUi(
+    val dayLog: DayLogState,
+    val exerciseLogs: Map<String, ExerciseLogState>
 )
-
-private val JSON_KEY = stringPreferencesKey("workout_log_json_v1")
 
 class WorkoutStateStore(private val context: Context) {
 
-    /**
-     * Emits merged [DayLogState] whenever preferences change.
-     */
-    fun dayLogFlow(dayKey: String, exercises: List<WorkoutExercise>): Flow<DayLogState> {
-        return context.workoutLogDataStore.data.map { prefs ->
-            val root = prefs[JSON_KEY]?.let { JSONObject(it) } ?: JSONObject()
-            parseDayFromRoot(root, dayKey, exercises)
-        }
-    }
+    private val dataStore get() = context.applicationContext.doItAllWorkoutDataStore
 
-    suspend fun saveDay(dayKey: String, day: DayLogState) {
-        context.workoutLogDataStore.edit { prefs ->
-            val root = prefs[JSON_KEY]?.let { JSONObject(it) } ?: JSONObject()
-            val days = root.optJSONObject("days") ?: JSONObject()
-            days.put(dayKey, day.toDayJson())
-            root.put("days", days)
-            prefs[JSON_KEY] = root.toString()
-        }
-    }
-
-    suspend fun updateDay(dayKey: String, exercises: List<WorkoutExercise>, transform: (DayLogState) -> DayLogState) {
-        context.workoutLogDataStore.edit { prefs ->
-            val root = prefs[JSON_KEY]?.let { JSONObject(it) } ?: JSONObject()
-            val current = parseDayFromRoot(root, dayKey, exercises)
-            val next = transform(current)
-            val days = root.optJSONObject("days") ?: JSONObject()
-            days.put(dayKey, next.toDayJson())
-            root.put("days", days)
-            prefs[JSON_KEY] = root.toString()
-        }
-    }
-
-    suspend fun updateSelectedPage(
-        dayKey: String,
-        exercises: List<WorkoutExercise>,
-        slotIndex: Int,
-        page: Int
-    ) {
-        updateDay(dayKey, exercises) { day ->
-            day.updateSlot(slotIndex) { slot ->
-                val max = (slot.pages.size - 1).coerceAtLeast(0)
-                slot.copy(selectedPage = page.coerceIn(0, max))
-            }
-        }
-    }
-
-    suspend fun updatePageLog(
-        dayKey: String,
-        exercises: List<WorkoutExercise>,
-        slotIndex: Int,
-        pageIndex: Int,
-        page: PageLogState
-    ) {
-        updateDay(dayKey, exercises) { day ->
-            day.updateSlot(slotIndex) { slot ->
-                if (pageIndex !in slot.pages.indices) return@updateSlot slot
-                val pages = slot.pages.toMutableList()
-                pages[pageIndex] = page
-                slot.copy(pages = pages)
-            }
-        }
-    }
-}
-
-private fun parseDayFromRoot(root: JSONObject, dayKey: String, exercises: List<WorkoutExercise>): DayLogState {
-    val days = root.optJSONObject("days") ?: return defaultDayLog(exercises)
-    val dayJson = days.optJSONObject(dayKey) ?: return defaultDayLog(exercises)
-    return parseDayJson(dayJson, exercises)
-}
-
-fun defaultDayLog(exercises: List<WorkoutExercise>): DayLogState {
-    val slots = exercises.mapIndexed { index, ex ->
-        index.toString() to defaultSlotLog(ex)
-    }.toMap()
-    return DayLogState(slots = slots)
-}
-
-fun defaultSlotLog(exercise: WorkoutExercise): SlotLogState {
-    val names = exercise.catalogOptionNames()
-    val pages = names.map { name ->
-        defaultPageForCatalog(exercise, initialName = name)
-    }
-    return SlotLogState(
-        selectedPage = 0,
-        pages = pages
-    )
-}
-
-private fun defaultPageForCatalog(template: WorkoutExercise, initialName: String): PageLogState {
-    val cardio = template.duration != null
-    val sets = if (cardio) 1 else template.defaultSetsInt().coerceAtLeast(1)
-    val repsSingle = if (cardio) null else template.defaultRepsInt()
-    return PageLogState(
-        selectedExerciseName = initialName,
-        sets = sets,
-        weight = if (cardio) "" else template.load,
-        usePerSetReps = false,
-        repsSingle = repsSingle,
-        repsPerSet = null,
-        comment = "",
-        isCardio = cardio,
-        duration = template.duration,
-        intensity = template.intensity
-    )
-}
-
-private fun DayLogState.toDayJson(): JSONObject {
-    val slotsObj = JSONObject()
-    slots.forEach { (k, v) ->
-        slotsObj.put(k, v.toSlotJson())
-    }
-    return JSONObject().put("slots", slotsObj)
-}
-
-private fun SlotLogState.toSlotJson(): JSONObject {
-    val arr = JSONArray()
-    pages.forEach { arr.put(it.toPageJson()) }
-    return JSONObject()
-        .put("selectedPage", selectedPage)
-        .put("pages", arr)
-}
-
-private fun PageLogState.toPageJson(): JSONObject {
-    val o = JSONObject()
-        .put("selectedExerciseName", selectedExerciseName)
-        .put("sets", sets)
-        .put("weight", weight)
-        .put("usePerSetReps", usePerSetReps)
-        .put("comment", comment.take(PageLogState.MAX_COMMENT_LENGTH))
-        .put("isCardio", isCardio)
-    if (repsSingle != null) o.put("repsSingle", repsSingle)
-    if (repsPerSet != null) {
-        val a = JSONArray()
-        repsPerSet.forEach { a.put(it) }
-        o.put("repsPerSet", a)
-    }
-    if (duration != null) o.put("duration", duration)
-    if (intensity != null) o.put("intensity", intensity)
-    return o
-}
-
-private fun parseDayJson(dayJson: JSONObject, exercises: List<WorkoutExercise>): DayLogState {
-    val slotsObj = dayJson.optJSONObject("slots") ?: JSONObject()
-    val out = mutableMapOf<String, SlotLogState>()
-    exercises.forEachIndexed { index, ex ->
-        val key = index.toString()
-        val slotJson = slotsObj.optJSONObject(key)
-        val default = defaultSlotLog(ex)
-        out[key] = if (slotJson == null) {
-            default
-        } else {
-            parseSlotJson(slotJson, ex, default)
-        }
-    }
-    return DayLogState(slots = out)
-}
-
-private fun parseSlotJson(
-    json: JSONObject,
-    template: WorkoutExercise,
-    default: SlotLogState
-): SlotLogState {
-    val names = template.catalogOptionNames()
-    val expectedPages = names.size
-    val selectedPage = json.optInt("selectedPage", default.selectedPage)
-        .coerceIn(0, (expectedPages - 1).coerceAtLeast(0))
-    val pagesArr = json.optJSONArray("pages")
-    val pages = if (pagesArr == null || pagesArr.length() != expectedPages) {
-        default.pages
-    } else {
-        List(expectedPages) { i ->
-            parsePageLog(
-                pagesArr.optJSONObject(i) ?: JSONObject(),
-                default.pages[i]
+    fun resolvedDayFlow(dayKey: String, day: WorkoutDay, plan: WorkoutPlan): Flow<ResolvedDayUi> {
+        return dataStore.data.map { prefs ->
+            val root = parsePersistRootV2(prefs[JSON_KEY_V2])
+            ResolvedDayUi(
+                dayLog = dayLogFromPersist(root, dayKey, day),
+                exerciseLogs = mergedExerciseLogs(plan, root)
             )
         }
     }
-    return SlotLogState(
-        selectedPage = selectedPage.coerceIn(0, (pages.size - 1).coerceAtLeast(0)),
-        pages = pages
-    )
+
+    suspend fun loadResolvedDay(dayKey: String, day: WorkoutDay, plan: WorkoutPlan): ResolvedDayUi {
+        val prefs = dataStore.data.first()
+        val root = parsePersistRootV2(prefs[JSON_KEY_V2])
+        return ResolvedDayUi(
+            dayLog = dayLogFromPersist(root, dayKey, day),
+            exerciseLogs = mergedExerciseLogs(plan, root)
+        )
+    }
+
+    suspend fun updateSelectedPage(dayKey: String, day: WorkoutDay, slotIndex: Int, page: Int) {
+        dataStore.edit { prefs ->
+            val root = parsePersistRootV2(prefs[JSON_KEY_V2])
+            val current = dayLogFromPersist(root, dayKey, day)
+            val slot = day.slots.getOrNull(slotIndex) ?: return@edit
+            val max = (slot.exerciseIds.size - 1).coerceAtLeast(0)
+            val nextDay = current.updateSlot(slotIndex) {
+                it.copy(selectedPage = page.coerceIn(0, max))
+            }
+            prefs[JSON_KEY_V2] = root.withDay(dayKey, nextDay).toJsonString()
+        }
+    }
+
+    suspend fun updateExerciseLog(exerciseId: String, log: ExerciseLogState) {
+        dataStore.edit { prefs ->
+            val root = parsePersistRootV2(prefs[JSON_KEY_V2])
+            val logs = root.logs.toMutableMap()
+            logs[exerciseId] = sanitizeExerciseLog(log)
+            prefs[JSON_KEY_V2] = root.copy(logs = logs).toJsonString()
+        }
+    }
+
+    suspend fun updateExerciseLogAndBinding(
+        dayKey: String,
+        day: WorkoutDay,
+        slotIndex: Int,
+        pageIndex: Int,
+        exerciseId: String,
+        log: ExerciseLogState
+    ) {
+        dataStore.edit { prefs ->
+            val root = parsePersistRootV2(prefs[JSON_KEY_V2])
+            val logs = root.logs.toMutableMap()
+            logs[exerciseId] = sanitizeExerciseLog(log)
+
+            val currentDay = dayLogFromPersist(root, dayKey, day)
+            val nextDay = currentDay.updateSlot(slotIndex) { slot ->
+                if (pageIndex !in slot.pageBindings.indices) return@updateSlot slot
+                val list = slot.pageBindings.toMutableList()
+                list[pageIndex] = exerciseId
+                slot.copy(pageBindings = list)
+            }
+            prefs[JSON_KEY_V2] = PersistRootV2(
+                logs = logs,
+                days = root.days + (dayKey to nextDay)
+            ).toJsonString()
+        }
+    }
 }
 
-private fun parsePageLog(json: JSONObject, default: PageLogState): PageLogState {
-    val repsArr = json.optJSONArray("repsPerSet")
-    val repsPerSet = if (repsArr == null) {
-        null
-    } else {
-        List(repsArr.length()) { repsArr.optInt(it) }
-    }
-    return PageLogState(
-        selectedExerciseName = json.optString("selectedExerciseName", default.selectedExerciseName),
-        sets = json.optInt("sets", default.sets).coerceAtLeast(1),
-        weight = json.optString("weight", default.weight),
-        usePerSetReps = json.optBoolean("usePerSetReps", default.usePerSetReps),
-        repsSingle = if (json.has("repsSingle")) json.optInt("repsSingle") else default.repsSingle,
-        repsPerSet = repsPerSet ?: default.repsPerSet,
-        comment = json.optString("comment", default.comment).take(PageLogState.MAX_COMMENT_LENGTH),
-        isCardio = json.optBoolean("isCardio", default.isCardio),
-        duration = if (json.has("duration")) json.optString("duration").ifBlank { null } else default.duration,
-        intensity = if (json.has("intensity")) json.optString("intensity").ifBlank { null } else default.intensity
-    )
-}
+private fun sanitizeExerciseLog(log: ExerciseLogState): ExerciseLogState =
+    log.copy(comment = log.comment.take(ExerciseLogState.MAX_COMMENT_LENGTH))
+
+private fun PersistRootV2.withDay(dayKey: String, day: DayLogState): PersistRootV2 =
+    copy(days = days + (dayKey to day))

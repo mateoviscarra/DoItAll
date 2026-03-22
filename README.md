@@ -19,9 +19,12 @@ Notes are standardized to English while preserving progressive overload context
 (up, same, down) and practical notes.
 
 On device, the Android app copies this to `app/src/main/assets/workout_plan.json`.
-**Per-session edits** (sets, single weight, reps single or per-set, comments up to 128 chars,
-last-opened carousel page per exercise slot, and which exercise is selected per carousel page)
-are persisted with **Jetpack DataStore** (`WorkoutStateStore`).
+
+When loading, the app builds a **shared exercise catalog**: the same display name (case-insensitive)
+maps to one **stable id**, so a movement that appears on multiple days shares **one saved log**
+(sets, weight, reps, comment). Carousel **bindings** (which id each page uses) and **last page index**
+per slot are still stored **per day** in DataStore (`WorkoutStateStore`, schema v2 key
+`workout_log_json_v2`). Older saved data under the previous key is not migrated.
 
 ## Next iterations
 

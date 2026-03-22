@@ -3,6 +3,7 @@ package com.mateoviscarra.doitall.data
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Locale
 
 object WorkoutRepository {
 
@@ -14,66 +15,87 @@ object WorkoutRepository {
         val root = JSONObject(jsonText)
         val scheduleArray = root.optJSONArray("schedule") ?: JSONArray()
 
+        val nameToId = linkedMapOf<String, String>()
+        val catalog = linkedMapOf<String, ExerciseDefinition>()
+
+        fun registerExercise(rawName: String, jsonTemplate: JSONObject?): String {
+            val key = rawName.trim().lowercase(Locale.US)
+            return nameToId.getOrPut(key) {
+                val displayName = rawName.trim()
+                val newId = buildStableExerciseId(displayName, catalog.keys.toMutableSet())
+                catalog[newId] = if (jsonTemplate != null) {
+                    exerciseDefinitionFromWorkoutJson(newId, displayName, jsonTemplate)
+                } else {
+                    placeholderExerciseDefinition(newId, displayName)
+                }
+                newId
+            }
+        }
+
+        fun parseSlot(exerciseObj: JSONObject): WorkoutSlot {
+            val mainName = exerciseObj.optString("name", "Unknown")
+            val mainId = registerExercise(mainName, exerciseObj)
+            val altNames = jsonStringArray(exerciseObj.optJSONArray("alternatives"))
+            val altIds = altNames.map { registerExercise(it, null) }
+            return WorkoutSlot(exerciseIds = listOf(mainId) + altIds)
+        }
+
         val schedule = buildList {
             for (i in 0 until scheduleArray.length()) {
                 val dayObj = scheduleArray.optJSONObject(i) ?: continue
-                add(parseWorkoutDay(dayObj))
+                val day = dayObj.optString("day", "Unknown Day")
+                val isRestDay = dayObj.optBoolean("is_rest_day", false)
+                val muscleGroups = jsonStringArray(dayObj.optJSONArray("muscle_groups"))
+                val notes = jsonStringArray(dayObj.optJSONArray("notes"))
+
+                val exercisesArray = dayObj.optJSONArray("exercises") ?: JSONArray()
+                val slots = buildList {
+                    for (j in 0 until exercisesArray.length()) {
+                        val exerciseObj = exercisesArray.optJSONObject(j) ?: continue
+                        add(parseSlot(exerciseObj))
+                    }
+                }
+
+                add(
+                    WorkoutDay(
+                        day = day,
+                        muscleGroups = muscleGroups,
+                        isRestDay = isRestDay,
+                        notes = notes,
+                        slots = slots
+                    )
+                )
             }
         }
 
-        return WorkoutPlan(schedule = schedule)
-    }
-
-    private fun parseWorkoutDay(dayObj: JSONObject): WorkoutDay {
-        val day = dayObj.optString("day", "Unknown Day")
-        val isRestDay = dayObj.optBoolean("is_rest_day", false)
-        val muscleGroups = jsonStringArray(dayObj.optJSONArray("muscle_groups"))
-        val notes = jsonStringArray(dayObj.optJSONArray("notes"))
-
-        val exercisesArray = dayObj.optJSONArray("exercises") ?: JSONArray()
-        val exercises = buildList {
-            for (i in 0 until exercisesArray.length()) {
-                val exerciseObj = exercisesArray.optJSONObject(i) ?: continue
-                add(parseExercise(exerciseObj))
-            }
-        }
-
-        return WorkoutDay(
-            day = day,
-            muscleGroups = muscleGroups,
-            isRestDay = isRestDay,
-            notes = notes,
-            exercises = exercises
-        )
-    }
-
-    private fun parseExercise(exerciseObj: JSONObject): WorkoutExercise {
-        val name = exerciseObj.optString("name", "Unknown Exercise")
-        val sets = exerciseObj.opt("sets")?.toString() ?: "-"
-        val reps = exerciseObj.optString("reps", "-")
-        val load = exerciseObj.optString("load", "-")
-        val alternatives = jsonStringArray(exerciseObj.optJSONArray("alternatives"))
-        val duration = exerciseObj.optString("duration").takeIf { it.isNotEmpty() }
-        val intensity = exerciseObj.optString("intensity").takeIf { it.isNotEmpty() }
-
-        return WorkoutExercise(
-            name = name,
-            sets = sets,
-            reps = reps,
-            load = load,
-            alternatives = alternatives,
-            duration = duration,
-            intensity = intensity
+        return WorkoutPlan(
+            catalog = catalog.toMap(),
+            schedule = schedule
         )
     }
 
     private fun jsonStringArray(array: JSONArray?): List<String> {
         if (array == null) return emptyList()
-
         return buildList {
             for (i in 0 until array.length()) {
                 add(array.optString(i))
             }
         }
     }
+}
+
+private fun buildStableExerciseId(displayName: String, taken: MutableSet<String>): String {
+    val base = displayName.lowercase(Locale.US)
+        .replace(Regex("[^a-z0-9]+"), "_")
+        .trim('_')
+        .ifEmpty { "exercise" }
+    if (base !in taken) return base
+    val suffix = displayName.hashCode().toUInt().toString(16)
+    var candidate = "${base}_$suffix"
+    var n = 1
+    while (candidate in taken) {
+        candidate = "${base}_${suffix}_$n"
+        n++
+    }
+    return candidate
 }

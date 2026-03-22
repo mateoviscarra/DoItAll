@@ -39,42 +39,52 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.mateoviscarra.doitall.data.WorkoutExercise
-import com.mateoviscarra.doitall.data.catalogOptionNames
-import com.mateoviscarra.doitall.data.persist.PageLogState
+import com.mateoviscarra.doitall.data.WorkoutDay
+import com.mateoviscarra.doitall.data.WorkoutPlan
+import com.mateoviscarra.doitall.data.persist.ExerciseLogState
 import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
-import kotlinx.coroutines.flow.first
+import com.mateoviscarra.doitall.data.persist.defaultExerciseLog
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditVariationScreen(
+    workoutPlan: WorkoutPlan,
     dayKey: String,
-    exercises: List<WorkoutExercise>,
+    workoutDay: WorkoutDay,
     slotIndex: Int,
     pageIndex: Int,
     store: WorkoutStateStore,
     onBack: () -> Unit,
     onSaved: () -> Unit
 ) {
-    val template = exercises.getOrNull(slotIndex) ?: run {
+    val slot = workoutDay.slots.getOrNull(slotIndex) ?: run {
         onBack()
         return
     }
-    val catalog = template.catalogOptionNames()
-
+    val optionIds = slot.optionIds()
     val scope = rememberCoroutineScope()
 
-    var pageState by remember(dayKey, slotIndex, pageIndex) {
-        mutableStateOf<PageLogState?>(null)
+    var selectedExerciseId by remember { mutableStateOf<String?>(null) }
+    var draftLog by remember { mutableStateOf<ExerciseLogState?>(null) }
+
+    val locationsById = remember(workoutPlan) { workoutPlan.exerciseLocationsById() }
+
+    LaunchedEffect(dayKey, slotIndex, pageIndex, workoutDay, workoutPlan) {
+        val resolved = store.loadResolvedDay(dayKey, workoutDay, workoutPlan)
+        val bindings = resolved.dayLog.slots[slotIndex.toString()]?.pageBindings ?: return@LaunchedEffect
+        val id = bindings.getOrNull(pageIndex) ?: return@LaunchedEffect
+        selectedExerciseId = id
     }
 
-    LaunchedEffect(dayKey, slotIndex, pageIndex, exercises) {
-        val day = store.dayLogFlow(dayKey, exercises).first()
-        pageState = day.slots[slotIndex.toString()]?.pages?.getOrNull(pageIndex)
+    LaunchedEffect(selectedExerciseId, dayKey, workoutDay, workoutPlan) {
+        val id = selectedExerciseId ?: return@LaunchedEffect
+        val resolved = store.loadResolvedDay(dayKey, workoutDay, workoutPlan)
+        draftLog = resolved.exerciseLogs[id]
+            ?: workoutPlan.catalog[id]?.let { defaultExerciseLog(it) }
     }
 
-    if (pageState == null) {
+    if (selectedExerciseId == null || draftLog == null) {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -92,6 +102,17 @@ fun EditVariationScreen(
         return
     }
 
+    val exerciseId = selectedExerciseId!!
+    val def = workoutPlan.catalog[exerciseId]
+    val isCardio = def?.duration != null
+
+    val linkedOtherDays = locationsById[exerciseId]
+        ?.filter { it.dayKey != dayKey }
+        ?.map { it.dayKey }
+        ?.distinct()
+        ?.sorted()
+        .orEmpty()
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -107,15 +128,16 @@ fun EditVariationScreen(
         bottomBar = {
             Button(
                 onClick = {
-                    val toSave = pageState ?: return@Button
-                    if (!validate(toSave)) return@Button
+                    val toSave = draftLog ?: return@Button
+                    if (!validate(toSave, isCardio)) return@Button
                     scope.launch {
-                        store.updatePageLog(
+                        store.updateExerciseLogAndBinding(
                             dayKey = dayKey,
-                            exercises = exercises,
+                            day = workoutDay,
                             slotIndex = slotIndex,
                             pageIndex = pageIndex,
-                            page = sanitize(toSave)
+                            exerciseId = exerciseId,
+                            log = sanitizeForSave(toSave, isCardio)
                         )
                         onSaved()
                     }
@@ -128,106 +150,91 @@ fun EditVariationScreen(
             }
         }
     ) { innerPadding ->
-        EditVariationForm(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            catalog = catalog,
-            state = pageState!!,
-            onStateChange = { pageState = it }
-        )
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (linkedOtherDays.isNotEmpty()) {
+                Text(
+                    text = "This exercise is also on: ${linkedOtherDays.joinToString()}. Edits update every day that uses it.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
+            Text(text = "Exercise", style = MaterialTheme.typography.labelLarge)
+            ExerciseIdDropdown(
+                optionIds = optionIds,
+                selectedId = exerciseId,
+                workoutPlan = workoutPlan,
+                onSelectedId = { newId -> selectedExerciseId = newId }
+            )
+
+            val log = draftLog!!
+
+            if (isCardio) {
+                OutlinedTextField(
+                    value = log.duration ?: "",
+                    onValueChange = { v ->
+                        draftLog = log.copy(duration = v.ifBlank { null })
+                    },
+                    label = { Text("Duration") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = log.intensity ?: "",
+                    onValueChange = { v ->
+                        draftLog = log.copy(intensity = v.ifBlank { null })
+                    },
+                    label = { Text("Intensity") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                SetsWeightRepsSection(
+                    state = log,
+                    onChange = { draftLog = it }
+                )
+            }
+
+            OutlinedTextField(
+                value = draftLog!!.comment,
+                onValueChange = { v ->
+                    draftLog = draftLog!!.copy(comment = v.take(ExerciseLogState.MAX_COMMENT_LENGTH))
+                },
+                label = { Text("Comment (max ${ExerciseLogState.MAX_COMMENT_LENGTH} chars)") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2,
+                maxLines = 4,
+                supportingText = {
+                    Text("${draftLog!!.comment.length}/${ExerciseLogState.MAX_COMMENT_LENGTH}")
+                }
+            )
+
+            Spacer(modifier = Modifier.height(72.dp))
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditVariationForm(
-    modifier: Modifier,
-    catalog: List<String>,
-    state: PageLogState,
-    onStateChange: (PageLogState) -> Unit
-) {
-    LaunchedEffect(catalog, state.selectedExerciseName) {
-        if (state.selectedExerciseName !in catalog && catalog.isNotEmpty()) {
-            onStateChange(state.copy(selectedExerciseName = catalog.first()))
-        }
-    }
-
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(
-            text = "Exercise",
-            style = MaterialTheme.typography.labelLarge
-        )
-        ExerciseDropdown(
-            catalog = catalog,
-            selected = state.selectedExerciseName,
-            onSelected = { name ->
-                onStateChange(state.copy(selectedExerciseName = name))
-            }
-        )
-
-        if (state.isCardio) {
-            OutlinedTextField(
-                value = state.duration ?: "",
-                onValueChange = { v ->
-                    onStateChange(state.copy(duration = v.ifBlank { null }))
-                },
-                label = { Text("Duration") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = state.intensity ?: "",
-                onValueChange = { v ->
-                    onStateChange(state.copy(intensity = v.ifBlank { null }))
-                },
-                label = { Text("Intensity") },
-                modifier = Modifier.fillMaxWidth()
-            )
-        } else {
-            SetsWeightRepsSection(
-                state = state,
-                onChange = onStateChange
-            )
-        }
-
-        OutlinedTextField(
-            value = state.comment,
-            onValueChange = { v ->
-                val clipped = v.take(PageLogState.MAX_COMMENT_LENGTH)
-                onStateChange(state.copy(comment = clipped))
-            },
-            label = { Text("Comment (max ${PageLogState.MAX_COMMENT_LENGTH} chars)") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            maxLines = 4,
-            supportingText = {
-                Text("${state.comment.length}/${PageLogState.MAX_COMMENT_LENGTH}")
-            }
-        )
-
-        Spacer(modifier = Modifier.height(72.dp))
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ExerciseDropdown(
-    catalog: List<String>,
-    selected: String,
-    onSelected: (String) -> Unit
+private fun ExerciseIdDropdown(
+    optionIds: List<String>,
+    selectedId: String,
+    workoutPlan: WorkoutPlan,
+    onSelectedId: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val label = workoutPlan.catalog[selectedId]?.name ?: selectedId
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded }
     ) {
         OutlinedTextField(
-            value = selected,
+            value = label,
             onValueChange = {},
             readOnly = true,
             modifier = Modifier
@@ -239,11 +246,12 @@ private fun ExerciseDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            catalog.forEach { name ->
+            optionIds.forEach { id ->
+                val name = workoutPlan.catalog[id]?.name ?: id
                 DropdownMenuItem(
                     text = { Text(name) },
                     onClick = {
-                        onSelected(name)
+                        onSelectedId(id)
                         expanded = false
                     }
                 )
@@ -254,8 +262,8 @@ private fun ExerciseDropdown(
 
 @Composable
 private fun SetsWeightRepsSection(
-    state: PageLogState,
-    onChange: (PageLogState) -> Unit
+    state: ExerciseLogState,
+    onChange: (ExerciseLogState) -> Unit
 ) {
     var setsText by remember(state.sets) { mutableStateOf(state.sets.toString()) }
     var weightText by remember(state.weight) { mutableStateOf(state.weight) }
@@ -366,36 +374,28 @@ private fun RowCheckbox(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Checkbox(checked = checked, onCheckedChange = onCheckedChange)
         Text(text = label, style = MaterialTheme.typography.bodyLarge)
     }
 }
 
-private fun validate(page: PageLogState): Boolean {
-    if (page.isCardio) return true
-    if (page.usePerSetReps) {
-        val list = page.repsPerSet
-        return list != null && list.size == page.sets
+private fun validate(log: ExerciseLogState, isCardio: Boolean): Boolean {
+    if (isCardio) return true
+    if (log.usePerSetReps) {
+        val list = log.repsPerSet
+        return list != null && list.size == log.sets
     }
     return true
 }
 
-private fun sanitize(page: PageLogState): PageLogState {
-    val comment = page.comment.take(PageLogState.MAX_COMMENT_LENGTH)
-    return if (page.isCardio) {
-        page.copy(comment = comment)
-    } else if (page.usePerSetReps) {
-        page.copy(
-            comment = comment,
-            repsSingle = null
-        )
+private fun sanitizeForSave(log: ExerciseLogState, isCardio: Boolean): ExerciseLogState {
+    val comment = log.comment.take(ExerciseLogState.MAX_COMMENT_LENGTH)
+    return if (isCardio) {
+        log.copy(comment = comment)
+    } else if (log.usePerSetReps) {
+        log.copy(comment = comment, repsSingle = null)
     } else {
-        page.copy(
-            comment = comment,
-            repsPerSet = null
-        )
+        log.copy(comment = comment, repsPerSet = null)
     }
 }
