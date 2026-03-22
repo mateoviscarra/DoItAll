@@ -18,7 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material3.AlertDialog
@@ -44,11 +44,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,12 +61,13 @@ fun CalendarSettingsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val clipboardManager = LocalClipboardManager.current
 
     var showCredentialsDialog by remember { mutableStateOf(false) }
     var clientId by remember { mutableStateOf("") }
     var clientSecret by remember { mutableStateOf("") }
-    var authUrl by remember { mutableStateOf<String?>(null) }
-    var showAuthDialog by remember { mutableStateOf(false) }
+    var showAuthCodeDialog by remember { mutableStateOf(false) }
+    var authUrl by remember { mutableStateOf("") }
     var authCode by remember { mutableStateOf("") }
     var isConnecting by remember { mutableStateOf(false) }
     var connectionStatus by remember { mutableStateOf(calendarManager.getAuthState()) }
@@ -184,9 +187,9 @@ fun CalendarSettingsScreen(
                                "2. Create a new project or select existing\n" +
                                "3. Enable Google Calendar API\n" +
                                "4. Go to Credentials → Create Credentials → OAuth Client ID\n" +
-                               "5. Choose \"Web application\" type\n" +
-                               "6. Add redirect URI: $CALENDAR_REDIRECT_URI\n" +
-                               "7. Copy Client ID and Client Secret below",
+                               "5. Choose \"Desktop app\" type\n" +
+                               "6. Copy the Client ID and Client Secret\n" +
+                               "7. Enter them below",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -240,8 +243,7 @@ fun CalendarSettingsScreen(
                         onValueChange = { clientSecret = it },
                         label = { Text("Client Secret") },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation()
+                        singleLine = true
                     )
                 }
             },
@@ -251,9 +253,9 @@ fun CalendarSettingsScreen(
                         if (clientId.isNotBlank() && clientSecret.isNotBlank()) {
                             calendarManager.saveCredentials(CalendarCredentials(clientId, clientSecret))
                             try {
-                                authUrl = calendarManager.getAuthUrl()
+                                authUrl = calendarManager.getAuthorizationUrl()
                                 showCredentialsDialog = false
-                                showAuthDialog = true
+                                showAuthCodeDialog = true
                             } catch (e: Exception) {
                                 errorMessage = "Failed to generate auth URL: ${e.message}"
                             }
@@ -271,62 +273,89 @@ fun CalendarSettingsScreen(
         )
     }
 
-    if (showAuthDialog && authUrl != null) {
+    if (showAuthCodeDialog) {
         AlertDialog(
-            onDismissRequest = { showAuthDialog = false },
+            onDismissRequest = { 
+                showAuthCodeDialog = false
+                isConnecting = false
+            },
             title = { Text("Authorize DoItAll") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Click the button below to authorize the app in your browser.")
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "1. Open this URL in your browser:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    
+                    OutlinedTextField(
+                        value = authUrl,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                clipboardManager.setText(AnnotatedString(authUrl))
+                            }) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
+                            }
+                        }
+                    )
+                    
                     Button(
                         onClick = {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(authUrl))
                             context.startActivity(intent)
-                            showAuthDialog = false
-                            isConnecting = true
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Open Authorization Page")
                     }
+                    
                     OutlinedTextField(
                         value = authCode,
                         onValueChange = { authCode = it },
-                        label = { Text("Paste Authorization Code") },
+                        label = { Text("Authorization Code") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-                    )
-                    Text(
-                        text = "After authorizing, copy the code from the URL and paste it above.",
-                        style = MaterialTheme.typography.bodySmall
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        supportingText = { Text("After authorizing, copy the code from the URL (after 'code=') and paste it here") }
                     )
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        scope.launch {
-                            try {
-                                calendarManager.exchangeCodeForTokens(authCode)
-                                connectionStatus = calendarManager.getAuthState()
-                                successMessage = "Successfully connected to Google Calendar!"
-                                isConnecting = false
-                                authCode = ""
-                            } catch (e: Exception) {
-                                errorMessage = "Failed to connect: ${e.message}"
-                                isConnecting = false
+                        if (authCode.isNotBlank()) {
+                            isConnecting = true
+                            scope.launch {
+                                val result = calendarManager.exchangeCodeForTokens(authCode)
+                                result.fold(
+                                    onSuccess = {
+                                        connectionStatus = calendarManager.getAuthState()
+                                        showAuthCodeDialog = false
+                                        isConnecting = false
+                                        authCode = ""
+                                        successMessage = "Successfully connected to Google Calendar!"
+                                    },
+                                    onFailure = { error ->
+                                        errorMessage = "Failed to connect: ${error.message}"
+                                        isConnecting = false
+                                    }
+                                )
                             }
                         }
                     },
-                    enabled = authCode.isNotBlank()
+                    enabled = authCode.isNotBlank() && !isConnecting
                 ) {
                     Text("Connect")
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
-                    showAuthDialog = false
+                    showAuthCodeDialog = false
                     isConnecting = false
                     authCode = ""
                 }) {
@@ -363,7 +392,7 @@ fun CalendarSettingsScreen(
 
     LaunchedEffect(successMessage, errorMessage) {
         if (successMessage != null || errorMessage != null) {
-            kotlinx.coroutines.delay(3000)
+            delay(3000)
             successMessage = null
             errorMessage = null
         }

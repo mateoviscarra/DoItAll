@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -19,7 +19,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-const val CALENDAR_REDIRECT_URI = "com.mateoviscarra.doitall:/oauth2callback"
 const val CALENDAR_SCOPES = "https://www.googleapis.com/auth/calendar.events"
 
 data class CalendarCredentials(
@@ -75,36 +74,55 @@ class CalendarManager(private val context: Context) {
                 securePrefs.getString(KEY_CLIENT_SECRET, null) != null
     }
 
-    fun getAuthUrl(): String {
+    fun getAuthorizationUrl(): String {
         val clientId = securePrefs.getString(KEY_CLIENT_ID, null)
             ?: throw IllegalStateException("Client ID not configured")
 
-        val flow = createFlow(clientId, "")
-        return flow.newAuthorizationUrl()
-            .setRedirectUri(CALENDAR_REDIRECT_URI)
-            .build()
+        return "https://accounts.google.com/o/oauth2/v2/auth?" +
+               "client_id=${java.net.URLEncoder.encode(clientId, "UTF-8")}" +
+               "&response_type=code" +
+               "&scope=${java.net.URLEncoder.encode(CALENDAR_SCOPES, "UTF-8")}" +
+               "&redirect_uri=http://localhost:8080" +
+               "&access_type=offline" +
+               "&prompt=consent"
     }
 
-    fun exchangeCodeForTokens(authCode: String) {
-        val clientId = securePrefs.getString(KEY_CLIENT_ID, null)
-            ?: throw IllegalStateException("Client ID not configured")
-        val clientSecret = securePrefs.getString(KEY_CLIENT_SECRET, null)
-            ?: throw IllegalStateException("Client secret not configured")
+    suspend fun exchangeCodeForTokens(authCode: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val clientId = securePrefs.getString(KEY_CLIENT_ID, null)
+                ?: return@withContext Result.failure(Exception("Client ID not configured"))
+            val clientSecret = securePrefs.getString(KEY_CLIENT_SECRET, null)
+                ?: return@withContext Result.failure(Exception("Client secret not configured"))
 
-        val flow = createFlow(clientId, clientSecret)
-        val response = flow.newTokenRequest(authCode)
-            .setRedirectUri(CALENDAR_REDIRECT_URI)
-            .execute()
+            val transport = NetHttpTransport()
+            val jsonFactory = GsonFactory.getDefaultInstance()
 
-        val expiryTime = System.currentTimeMillis() + (response.expiresInSeconds ?: 3600) * 1000
+            val request = GoogleAuthorizationCodeTokenRequest(
+                transport,
+                jsonFactory,
+                "https://oauth2.googleapis.com/token",
+                clientId,
+                clientSecret,
+                authCode,
+                "http://localhost:8080"
+            )
 
-        securePrefs.edit()
-            .putString(KEY_ACCESS_TOKEN, response.accessToken)
-            .putString(KEY_REFRESH_TOKEN, response.refreshToken)
-            .putLong(KEY_TOKEN_EXPIRY, expiryTime)
-            .apply()
+            val response = request.execute()
 
-        calendarService = createCalendarService()
+            val expiryTime = System.currentTimeMillis() + (response.expiresInSeconds ?: 3600) * 1000
+
+            securePrefs.edit()
+                .putString(KEY_ACCESS_TOKEN, response.accessToken)
+                .putString(KEY_REFRESH_TOKEN, response.refreshToken)
+                .putLong(KEY_TOKEN_EXPIRY, expiryTime)
+                .apply()
+
+            calendarService = createCalendarService()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     fun getAuthState(): CalendarAuthState {
@@ -126,27 +144,6 @@ class CalendarManager(private val context: Context) {
         securePrefs.edit().clear().apply()
         prefs.edit().clear().apply()
         calendarService = null
-    }
-
-    private fun createFlow(clientId: String, clientSecret: String): GoogleAuthorizationCodeFlow {
-        val clientSecrets = GoogleClientSecrets.load(
-            GsonFactory.getDefaultInstance(),
-            StringReader("""
-                {
-                    "web": {
-                        "client_id": "$clientId",
-                        "client_secret": "$clientSecret"
-                    }
-                }
-            """.trimIndent())
-        )
-
-        return GoogleAuthorizationCodeFlow.Builder(
-            NetHttpTransport(),
-            GsonFactory.getDefaultInstance(),
-            clientSecrets,
-            listOf(CALENDAR_SCOPES)
-        ).setAccessType("offline").setApprovalPrompt("force").build()
     }
 
     private fun createCalendarService(): Calendar {
