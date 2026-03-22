@@ -21,9 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -263,12 +261,26 @@ fun WorkoutDetailScreen(
                                 val log = resolved.exerciseLogs[exerciseId]
                                 val name = def?.name ?: exerciseId
                                 val sets = log?.sets?.toString() ?: def?.sets ?: "?"
-                                val reps = log?.repsSingle?.toString() ?: def?.reps ?: "?"
+                                
+                                val repsStr = when {
+                                    log?.usePerSetReps == true && !log.repsPerSet.isNullOrEmpty() -> {
+                                        log.repsPerSet.joinToString(", ")
+                                    }
+                                    log?.repsSingle != null -> log.repsSingle.toString()
+                                    else -> def?.reps ?: "?"
+                                }
+                                
                                 val weightStr = when {
-                                    log?.isBodyweight == true -> "Bodyweight"
+                                    log?.isBodyweight == true -> {
+                                        if (log.weight.isNotEmpty()) {
+                                            "Bodyweight + ${log.weight}"
+                                        } else {
+                                            "Bodyweight"
+                                        }
+                                    }
                                     log?.weight?.isNotEmpty() == true -> {
                                         val weight = log.weight
-                                        val hasUnit = weight.contains("kg", ignoreCase = true) || weight.contains("lbs", ignoreCase = true) || weight.contains("kg", ignoreCase = true)
+                                        val hasUnit = weight.contains("kg", ignoreCase = true) || weight.contains("lbs", ignoreCase = true)
                                         if (hasUnit) weight else {
                                             val unit = if (log.weightUnit == com.mateoviscarra.doitall.data.persist.WeightUnit.LBS) "lbs" else "kg"
                                             "$weight $unit"
@@ -277,7 +289,7 @@ fun WorkoutDetailScreen(
                                     def?.load?.isNotEmpty() == true -> def.load
                                     else -> ""
                                 }
-                                append("$name: $sets sets × $reps reps")
+                                append("$name: $sets sets × $repsStr reps")
                                 if (weightStr.isNotEmpty()) {
                                     append(" @ $weightStr")
                                 }
@@ -428,6 +440,7 @@ private fun VariationCard(
     }
 
     Card(
+        onClick = onEditClick,
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight(),
@@ -442,14 +455,12 @@ private fun VariationCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Title row with done checkbox
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    // Feature 4: "Alt" badge for secondary variations
                     if (!isMainVariation) {
                         Text(
                             text = "ALTERNATIVE",
@@ -462,12 +473,10 @@ private fun VariationCard(
                         text = displayName,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        // Feature 5: Strikethrough when done
                         textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None,
                         modifier = Modifier.alpha(if (isDone) 0.6f else 1f)
                     )
                 }
-                // Feature 5: Done toggle button
                 IconButton(onClick = onToggleDone) {
                     Icon(
                         imageVector = if (isDone) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
@@ -501,7 +510,6 @@ private fun VariationCard(
                     text = "${log.sets} sets × ${formatReps(log)} reps",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                // Feature 1: formatted weight with unit and bodyweight support
                 Text(
                     text = "Weight: ${formatWeight(log)}",
                     style = MaterialTheme.typography.bodyMedium
@@ -516,16 +524,6 @@ private fun VariationCard(
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
-
-            Button(onClick = onEditClick) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.Edit, contentDescription = null)
-                    Text(text = "Edit variation")
-                }
             }
         }
     }
