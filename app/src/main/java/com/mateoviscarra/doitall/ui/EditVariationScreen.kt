@@ -319,7 +319,6 @@ private fun SetsWeightRepsSection(
                 else "Weight"
             )
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth()
     )
 
