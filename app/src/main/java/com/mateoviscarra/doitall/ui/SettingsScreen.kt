@@ -2,6 +2,7 @@ package com.mateoviscarra.doitall.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -61,8 +62,8 @@ fun SettingsScreen(
 
     var calendars by remember { mutableStateOf<List<CalendarInfo>>(emptyList()) }
     var isLoadingCalendars by remember { mutableStateOf(false) }
-    var showCalendarDropdown by remember { mutableStateOf(false) }
     var selectedCalendarId by remember { mutableStateOf(calendarManager.getSelectedCalendarId()) }
+    var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -154,6 +155,9 @@ fun SettingsScreen(
                                             calendars = list
                                         }
                                         isLoadingCalendars = false
+                                        if (calendars.isNotEmpty()) {
+                                            expanded = true
+                                        }
                                     }
                                 },
                                 enabled = !isLoadingCalendars
@@ -171,20 +175,15 @@ fun SettingsScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        val selectedCalendar = calendars.find { it.id == selectedCalendarId }
-                            ?: calendars.firstOrNull()
-
-                        if (calendars.isEmpty() && !isLoadingCalendars) {
-                            Text(
-                                text = "Tap refresh to load calendars",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        } else {
+                        Box(modifier = Modifier.fillMaxWidth()) {
                             OutlinedCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { showCalendarDropdown = true }
+                                    .clickable { 
+                                        if (calendars.isNotEmpty()) {
+                                            expanded = !expanded
+                                        }
+                                    }
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -193,12 +192,22 @@ fun SettingsScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    val selectedCalendar = calendars.find { it.id == selectedCalendarId }
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = selectedCalendar?.summary ?: "Select calendar",
-                                            style = MaterialTheme.typography.bodyLarge
+                                            text = if (calendars.isEmpty()) {
+                                                "Tap refresh to load calendars"
+                                            } else {
+                                                selectedCalendar?.summary ?: "Select calendar"
+                                            },
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = if (calendars.isEmpty()) {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurface
+                                            }
                                         )
-                                        if (selectedCalendar?.description != null) {
+                                        if (selectedCalendar?.description != null && calendars.isNotEmpty()) {
                                             Text(
                                                 text = selectedCalendar.description,
                                                 style = MaterialTheme.typography.bodySmall,
@@ -214,8 +223,8 @@ fun SettingsScreen(
                             }
 
                             DropdownMenu(
-                                expanded = showCalendarDropdown,
-                                onDismissRequest = { showCalendarDropdown = false }
+                                expanded = expanded && calendars.isNotEmpty(),
+                                onDismissRequest = { expanded = false }
                             ) {
                                 calendars.forEach { calendar ->
                                     DropdownMenuItem(
@@ -237,7 +246,7 @@ fun SettingsScreen(
                                         onClick = {
                                             selectedCalendarId = calendar.id
                                             calendarManager.setSelectedCalendarId(calendar.id)
-                                            showCalendarDropdown = false
+                                            expanded = false
                                         },
                                         leadingIcon = {
                                             if (calendar.backgroundColor != null) {

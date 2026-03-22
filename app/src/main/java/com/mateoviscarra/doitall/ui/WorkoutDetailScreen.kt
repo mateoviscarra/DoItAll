@@ -125,6 +125,19 @@ fun WorkoutDetailScreen(
                     }
                 },
                 actions = {
+                    // Uncheck All button
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                store.uncheckAllForDay(dayKey, workoutDay)
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.CheckCircle,
+                            contentDescription = "Uncheck all exercises"
+                        )
+                    }
                     // Calendar sync button
                     if (workoutDay.slots.isNotEmpty() && !workoutDay.isRestDay) {
                         IconButton(
@@ -142,21 +155,6 @@ fun WorkoutDetailScreen(
                             Icon(
                                 imageVector = Icons.Default.CalendarMonth,
                                 contentDescription = "Add to Calendar"
-                            )
-                        }
-                    }
-                    // Uncheck All button — only shown when there are done exercises
-                    if (resolved.dayLog.doneExercises.isNotEmpty()) {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    store.uncheckAllForDay(dayKey, workoutDay)
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.CheckCircle,
-                                contentDescription = "Uncheck all exercises"
                             )
                         }
                     }
@@ -253,13 +251,38 @@ fun WorkoutDetailScreen(
                 showScheduleDialog = false
                 isSyncing = true
                 scope.launch {
-                    val exerciseNames = workoutDay.slots.mapNotNull { slot ->
-                        val exerciseId = slot.exerciseIds.firstOrNull()
-                        val def = exerciseId?.let { workoutPlan.catalog[it] }
-                        def?.name
-                    }.take(3)
-                    val title = "$dayKey: ${exerciseNames.joinToString(", ")}"
-                    val description = "${workoutDay.slots.size} exercises"
+                    val title = dayKey
+
+                    val description = buildString {
+                        val doneExerciseIds = resolved.dayLog.doneExercises
+                        if (doneExerciseIds.isEmpty()) {
+                            append("No exercises logged")
+                        } else {
+                            doneExerciseIds.forEachIndexed { index, exerciseId ->
+                                val def = workoutPlan.catalog[exerciseId]
+                                val log = resolved.exerciseLogs[exerciseId]
+                                val name = def?.name ?: exerciseId
+                                val sets = log?.sets?.toString() ?: def?.sets ?: "?"
+                                val reps = log?.repsSingle?.toString() ?: def?.reps ?: "?"
+                                val weightStr = when {
+                                    log?.isBodyweight == true -> "Bodyweight"
+                                    log?.weight?.isNotEmpty() == true -> {
+                                        val unit = if (log.weightUnit == com.mateoviscarra.doitall.data.persist.WeightUnit.LBS) "lbs" else "kg"
+                                        "${log.weight} $unit"
+                                    }
+                                    def?.load?.isNotEmpty() == true -> def.load
+                                    else -> ""
+                                }
+                                append("$name: $sets sets × $reps reps")
+                                if (weightStr.isNotEmpty()) {
+                                    append(" @ $weightStr")
+                                }
+                                if (index < doneExerciseIds.size - 1) {
+                                    append("\n")
+                                }
+                            }
+                        }
+                    }
 
                     val (date, startHour, startMinute) = if (config.useCustomTime) {
                         Triple(config.customDate, config.customStartTime.hour, config.customStartTime.minute)
