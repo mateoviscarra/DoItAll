@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -282,7 +283,8 @@ private fun ExerciseSlotRow(
                 linkedOtherDayNames = otherDayNames,
                 isDone = isDone,
                 onEditClick = { onEdit(pageIndex) },
-                onToggleDone = { onToggleDone(exerciseId) }
+                onToggleDone = { onToggleDone(exerciseId) },
+                modifier = Modifier.height(200.dp)
             )
         }
     }
@@ -296,9 +298,9 @@ private fun VariationCard(
     linkedOtherDayNames: List<String>,
     isDone: Boolean,
     onEditClick: () -> Unit,
-    onToggleDone: () -> Unit
+    onToggleDone: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    // Feature 4: More pronounced color difference between main and secondary
     val colors = if (isMainVariation) {
         CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -312,9 +314,9 @@ private fun VariationCard(
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .fillMaxHeight(), // Feature 2: fill max height within IntrinsicSize.Max row
+            .fillMaxHeight(),
         colors = colors,
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isMainVariation) 4.dp else 1.dp
