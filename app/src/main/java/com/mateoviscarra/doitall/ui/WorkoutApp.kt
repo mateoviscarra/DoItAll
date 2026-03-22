@@ -1,21 +1,30 @@
 package com.mateoviscarra.doitall.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mateoviscarra.doitall.data.WorkoutPlan
+import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
 
 private const val ROUTE_LIST = "workout_list"
 private const val ROUTE_DETAIL = "workout_detail"
+private const val ROUTE_EDIT = "workout_edit"
 
 fun workoutDetailRoute(index: Int) = "$ROUTE_DETAIL/$index"
+
+private fun workoutEditRoute(dayIndex: Int, slotIndex: Int, pageIndex: Int) =
+    "$ROUTE_EDIT/$dayIndex/$slotIndex/$pageIndex"
 
 @Composable
 fun WorkoutApp(workoutPlan: WorkoutPlan) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val store = remember { WorkoutStateStore(context.applicationContext) }
 
     NavHost(
         navController = navController,
@@ -38,8 +47,34 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
             val index = entry.arguments?.getInt("index") ?: return@composable
             val day = workoutPlan.schedule.getOrNull(index) ?: return@composable
             WorkoutDetailScreen(
+                dayKey = day.day,
                 workoutDay = day,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onEditVariation = { slotIndex, pageIndex ->
+                    navController.navigate(workoutEditRoute(index, slotIndex, pageIndex))
+                }
+            )
+        }
+        composable(
+            route = "$ROUTE_EDIT/{dayIndex}/{slotIndex}/{pageIndex}",
+            arguments = listOf(
+                navArgument("dayIndex") { type = NavType.IntType },
+                navArgument("slotIndex") { type = NavType.IntType },
+                navArgument("pageIndex") { type = NavType.IntType }
+            )
+        ) { entry ->
+            val dayIndex = entry.arguments?.getInt("dayIndex") ?: return@composable
+            val slotIndex = entry.arguments?.getInt("slotIndex") ?: return@composable
+            val pageIndex = entry.arguments?.getInt("pageIndex") ?: return@composable
+            val day = workoutPlan.schedule.getOrNull(dayIndex) ?: return@composable
+            EditVariationScreen(
+                dayKey = day.day,
+                exercises = day.exercises,
+                slotIndex = slotIndex,
+                pageIndex = pageIndex,
+                store = store,
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() }
             )
         }
     }

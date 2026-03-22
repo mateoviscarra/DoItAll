@@ -18,8 +18,13 @@ The initial workout plan is stored in `data/workout_plan.json`.
 Notes are standardized to English while preserving progressive overload context
 (up, same, down) and practical notes.
 
+On device, the Android app copies this to `app/src/main/assets/workout_plan.json`.
+**Per-session edits** (sets, single weight, reps single or per-set, comments up to 128 chars,
+last-opened carousel page per exercise slot, and which exercise is selected per carousel page)
+are persisted with **Jetpack DataStore** (`WorkoutStateStore`).
+
 ## Next iterations
 
 - Add workout history and progression tracking over time
-- Move from hardcoded data to storage
+- Allow editing the exercise catalog (currently hardcoded per slot)
 - Build Android UI and workflows
