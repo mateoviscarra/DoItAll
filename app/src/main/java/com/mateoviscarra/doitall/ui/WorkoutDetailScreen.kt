@@ -267,8 +267,12 @@ fun WorkoutDetailScreen(
                                 val weightStr = when {
                                     log?.isBodyweight == true -> "Bodyweight"
                                     log?.weight?.isNotEmpty() == true -> {
-                                        val unit = if (log.weightUnit == com.mateoviscarra.doitall.data.persist.WeightUnit.LBS) "lbs" else "kg"
-                                        "${log.weight} $unit"
+                                        val weight = log.weight
+                                        val hasUnit = weight.contains("kg", ignoreCase = true) || weight.contains("lbs", ignoreCase = true) || weight.contains("kg", ignoreCase = true)
+                                        if (hasUnit) weight else {
+                                            val unit = if (log.weightUnit == com.mateoviscarra.doitall.data.persist.WeightUnit.LBS) "lbs" else "kg"
+                                            "$weight $unit"
+                                        }
                                     }
                                     def?.load?.isNotEmpty() == true -> def.load
                                     else -> ""
