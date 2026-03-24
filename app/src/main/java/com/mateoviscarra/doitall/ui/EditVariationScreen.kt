@@ -393,7 +393,7 @@ private fun SetsWeightRepsSection(
             onValueChange = { raw ->
                 val digits = raw.filter { it.isDigit() }.take(4)
                 singleRepText = digits
-                val n = digits.toIntOrNull() ?: 0
+                val n = if (digits.isEmpty()) null else digits.toIntOrNull()
                 onChange(state.copy(repsSingle = n, repsPerSet = null))
             },
             label = { Text("Reps") },
