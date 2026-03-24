@@ -60,8 +60,6 @@ class CalendarManager(private val context: Context) {
         Context.MODE_PRIVATE
     )
 
-    private var calendarService: Calendar? = null
-
     companion object {
         private const val KEY_CLIENT_ID = "client_id"
         private const val KEY_CLIENT_SECRET = "client_secret"
@@ -127,8 +125,6 @@ class CalendarManager(private val context: Context) {
                 .putLong(KEY_TOKEN_EXPIRY, expiryTime)
                 .apply()
 
-            calendarService = null
-
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -144,7 +140,7 @@ class CalendarManager(private val context: Context) {
         }
     }
 
-    private fun createCalendarService(): Calendar {
+    private fun getFreshCalendarService(): Calendar {
         val transport = NetHttpTransport()
         val jsonFactory = GsonFactory.getDefaultInstance()
 
@@ -161,7 +157,7 @@ class CalendarManager(private val context: Context) {
             return Result.failure(Exception("No refresh token available"))
         }
 
-        if (System.currentTimeMillis() < expiryTime - 60000) {
+        if (System.currentTimeMillis() < expiryTime - 300000) {
             return Result.success(Unit)
         }
 
@@ -191,10 +187,16 @@ class CalendarManager(private val context: Context) {
                 .putLong(KEY_TOKEN_EXPIRY, newExpiryTime)
                 .apply()
 
-            calendarService = null
-
             Result.success(Unit)
         } catch (e: Exception) {
+            if (e.message?.contains("invalid_grant", ignoreCase = true) == true ||
+                e.message?.contains("token expired", ignoreCase = true) == true) {
+                securePrefs.edit()
+                    .remove(KEY_ACCESS_TOKEN)
+                    .remove(KEY_REFRESH_TOKEN)
+                    .remove(KEY_TOKEN_EXPIRY)
+                    .apply()
+            }
             Result.failure(e)
         }
     }
@@ -217,7 +219,6 @@ class CalendarManager(private val context: Context) {
     fun disconnect() {
         securePrefs.edit().clear().apply()
         prefs.edit().clear().apply()
-        calendarService = null
     }
 
     fun getSelectedCalendarId(): String {
@@ -232,7 +233,7 @@ class CalendarManager(private val context: Context) {
         try {
             ensureValidToken().getOrThrow()
 
-            val service = calendarService ?: createCalendarService().also { calendarService = it }
+            val service = getFreshCalendarService()
 
             val calendarList = service.calendarList().list()
                 .setMaxResults(100)
@@ -266,7 +267,7 @@ class CalendarManager(private val context: Context) {
         try {
             ensureValidToken().getOrThrow()
 
-            val service = calendarService ?: createCalendarService().also { calendarService = it }
+            val service = getFreshCalendarService()
 
             val startDateTime = LocalDateTime.of(date.year, date.month, date.dayOfMonth, startHour, startMinute)
             val endDateTime = startDateTime.plusMinutes(durationMinutes.toLong())
@@ -307,7 +308,7 @@ class CalendarManager(private val context: Context) {
         try {
             ensureValidToken().getOrThrow()
 
-            val service = calendarService ?: createCalendarService().also { calendarService = it }
+            val service = getFreshCalendarService()
 
             val now = com.google.api.client.util.DateTime(System.currentTimeMillis())
             val events = service.events().list("primary")
