@@ -102,6 +102,9 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
                 onBack = { navController.popBackStack() },
                 onCalendarSettingsClick = {
                     navController.navigate(ROUTE_CALENDAR_SETTINGS)
+                },
+                onTimersClick = {
+                    navController.navigate(ROUTE_TIMERS)
                 }
             )
         }
@@ -119,7 +122,8 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
         }
         composable(ROUTE_TIMERS) {
             TimersScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                calendarManager = calendarManager
             )
         }
     }
