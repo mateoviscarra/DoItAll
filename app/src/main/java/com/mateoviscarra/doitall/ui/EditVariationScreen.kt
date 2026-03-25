@@ -297,49 +297,6 @@ private fun SetsWeightRepsSection(
         modifier = Modifier.fillMaxWidth()
     )
 
-    // Feature 1: Bodyweight checkbox
-    RowCheckbox(
-        label = "Bodyweight exercise",
-        checked = state.isBodyweight,
-        onCheckedChange = { checked ->
-            onChange(state.copy(isBodyweight = checked))
-        }
-    )
-
-    // Feature 1: Weight field — label changes based on bodyweight
-    OutlinedTextField(
-        value = weightText,
-        onValueChange = { v ->
-            weightText = v
-            onChange(state.copy(weight = v))
-        },
-        label = {
-            Text(
-                if (state.isBodyweight) "Added weight (leave blank for bodyweight only)"
-                else "Weight"
-            )
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    // Feature 1: kg / lbs toggle using FilterChip — only show if weight doesn't already have a unit
-    val hasWeightUnit = weightText.contains(Regex("""(?i)(kg|kgs|lbs?|each|per ?side)"""))
-    if (!hasWeightUnit) {
-        Text(text = "Unit", style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = state.weightUnit == WeightUnit.KG,
-                onClick = { onChange(state.copy(weightUnit = WeightUnit.KG)) },
-                label = { Text("kg") }
-            )
-            FilterChip(
-                selected = state.weightUnit == WeightUnit.LBS,
-                onClick = { onChange(state.copy(weightUnit = WeightUnit.LBS)) },
-                label = { Text("lbs") }
-            )
-        }
-    }
-
     RowCheckbox(
         label = "One rep value per set",
         checked = state.usePerSetReps,
@@ -400,6 +357,49 @@ private fun SetsWeightRepsSection(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
+    }
+
+    // Feature 1: Weight field — label changes based on bodyweight
+    OutlinedTextField(
+        value = weightText,
+        onValueChange = { v ->
+            weightText = v
+            onChange(state.copy(weight = v))
+        },
+        label = {
+            Text(
+                if (state.isBodyweight) "Added weight (leave blank for bodyweight only)"
+                else "Weight"
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    // Feature 1: Bodyweight checkbox
+    RowCheckbox(
+        label = "Bodyweight exercise",
+        checked = state.isBodyweight,
+        onCheckedChange = { checked ->
+            onChange(state.copy(isBodyweight = checked))
+        }
+    )
+
+    // Feature 1: kg / lbs toggle using FilterChip — only show if weight doesn't already have a unit
+    val hasWeightUnit = weightText.contains(Regex("""(?i)(kg|kgs|lbs?|each|per ?side)"""))
+    if (!hasWeightUnit) {
+        Text(text = "Unit", style = MaterialTheme.typography.labelLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = state.weightUnit == WeightUnit.KG,
+                onClick = { onChange(state.copy(weightUnit = WeightUnit.KG)) },
+                label = { Text("kg") }
+            )
+            FilterChip(
+                selected = state.weightUnit == WeightUnit.LBS,
+                onClick = { onChange(state.copy(weightUnit = WeightUnit.LBS)) },
+                label = { Text("lbs") }
+            )
+        }
     }
 }
 
