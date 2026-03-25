@@ -38,7 +38,8 @@ fun WorkoutListScreen(
     workoutDays: List<WorkoutDay>,
     onDaySelected: (index: Int) -> Unit,
     onSettingsClick: () -> Unit,
-    onCustomClick: () -> Unit
+    onCustomClick: () -> Unit,
+    onTimersClick: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -189,6 +190,18 @@ fun WorkoutListScreen(
                             }
                         }
                     }
+                }
+            }
+
+            item {
+                OutlinedButton(
+                    onClick = onTimersClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Timers & Tools",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }

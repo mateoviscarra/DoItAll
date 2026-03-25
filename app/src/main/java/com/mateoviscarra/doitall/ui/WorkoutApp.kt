@@ -18,6 +18,7 @@ private const val ROUTE_EDIT = "workout_edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_CALENDAR_SETTINGS = "calendar_settings"
 private const val ROUTE_CUSTOM = "custom_workout"
+private const val ROUTE_TIMERS = "timers"
 
 fun workoutDetailRoute(index: Int) = "$ROUTE_DETAIL/$index"
 
@@ -46,6 +47,9 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
                 },
                 onCustomClick = {
                     navController.navigate(ROUTE_CUSTOM)
+                },
+                onTimersClick = {
+                    navController.navigate(ROUTE_TIMERS)
                 }
             )
         }
@@ -110,6 +114,11 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
         composable(ROUTE_CUSTOM) {
             CustomWorkoutScreen(
                 calendarManager = calendarManager,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(ROUTE_TIMERS) {
+            TimersScreen(
                 onBack = { navController.popBackStack() }
             )
         }
