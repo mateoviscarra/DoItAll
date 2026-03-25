@@ -203,17 +203,31 @@ class CalendarManager(private val context: Context) {
 
     fun getAuthState(): CalendarAuthState {
         val accessToken = securePrefs.getString(KEY_ACCESS_TOKEN, null)
+        val refreshToken = securePrefs.getString(KEY_REFRESH_TOKEN, null)
+        val expiryTime = securePrefs.getLong(KEY_TOKEN_EXPIRY, 0)
         val hasCreds = hasCredentials()
 
+        val isValid = hasCreds && refreshToken != null && 
+            (accessToken != null && System.currentTimeMillis() < expiryTime - 60000)
+
         return CalendarAuthState(
-            isConnected = hasCreds && accessToken != null,
+            isConnected = isValid,
             email = securePrefs.getString(KEY_EMAIL, null),
-            expiresAt = securePrefs.getLong(KEY_TOKEN_EXPIRY, 0).takeIf { it > 0 }
+            expiresAt = expiryTime.takeIf { it > 0 }
         )
     }
 
     fun isConnected(): Boolean {
-        return hasCredentials() && securePrefs.getString(KEY_ACCESS_TOKEN, null) != null
+        return getAuthState().isConnected
+    }
+
+    suspend fun reconnect(): Result<Unit> = withContext(Dispatchers.IO) {
+        val refreshToken = securePrefs.getString(KEY_REFRESH_TOKEN, null)
+        if (refreshToken.isNullOrEmpty()) {
+            return@withContext Result.failure(Exception("No refresh token available. Please reconnect in settings."))
+        }
+        
+        ensureValidToken()
     }
 
     fun disconnect() {
@@ -267,7 +281,7 @@ class CalendarManager(private val context: Context) {
         try {
             ensureValidToken().getOrThrow()
 
-            val service = getFreshCalendarService()
+            var service = getFreshCalendarService()
 
             val startDateTime = LocalDateTime.of(date.year, date.month, date.dayOfMonth, startHour, startMinute)
             val endDateTime = startDateTime.plusMinutes(durationMinutes.toLong())
@@ -296,9 +310,24 @@ class CalendarManager(private val context: Context) {
                 .setOverrides(listOf(reminders))
 
             val calendarId = getSelectedCalendarId()
-            val createdEvent = service.events().insert(calendarId, event).execute()
-
-            Result.success(createdEvent.id)
+            
+            try {
+                val createdEvent = service.events().insert(calendarId, event).execute()
+                Result.success(createdEvent.id)
+            } catch (e: Exception) {
+                if (e.message?.contains("401") == true || e.message?.contains("UNAUTHENTICATED") == true) {
+                    ensureValidToken()
+                    service = getFreshCalendarService()
+                    try {
+                        val retryEvent = service.events().insert(calendarId, event).execute()
+                        Result.success(retryEvent.id)
+                    } catch (retryError: Exception) {
+                        Result.failure(retryError)
+                    }
+                } else {
+                    Result.failure(e)
+                }
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
