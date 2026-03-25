@@ -382,13 +382,9 @@ private fun TimerDialog(
     onStart: (description: String, customDurationMs: Long) -> Unit
 ) {
     var description by remember { mutableStateOf("") }
-    var showTimePicker by remember { mutableStateOf(false) }
+    var customMinutes by remember { mutableStateOf(timerType.defaultMinutes.toString()) }
+    var customMinutesFocused by remember { mutableStateOf(false) }
     
-    val timePickerState = rememberTimePickerState(
-        initialHour = timerType.defaultMinutes / 60,
-        initialMinute = timerType.defaultMinutes % 60
-    )
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("${timerType.name} Timer") },
@@ -429,28 +425,28 @@ private fun TimerDialog(
                 )
                 
                 if (customTimeEnabled) {
-                    if (showTimePicker) {
-                        TimePicker(state = timePickerState)
-                        TextButton(
-                            onClick = {
-                                val totalMinutes = timePickerState.hour * 60 + timePickerState.minute
-                                onStart(description, totalMinutes * 60 * 1000L)
+                    OutlinedTextField(
+                        value = customMinutes,
+                        onValueChange = { newValue ->
+                            if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
+                                customMinutes = newValue
                             }
-                        ) {
-                            Text("Set Time")
-                        }
-                    } else {
-                        TextButton(onClick = { showTimePicker = true }) {
-                            Text("Custom Duration")
-                        }
-                    }
+                        },
+                        label = { Text("Minutes") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        isError = customMinutesFocused && (customMinutes.isEmpty() || customMinutes.toIntOrNull() == null || customMinutes.toInt() <= 0)
+                    )
                 }
             }
         },
         confirmButton = {
             Button(
-                onClick = { onStart(description, 0L) },
-                enabled = !customTimeEnabled || !showTimePicker
+                onClick = { 
+                    val minutes = if (customTimeEnabled) customMinutes.toIntOrNull() ?: timerType.defaultMinutes else timerType.defaultMinutes
+                    onStart(description, minutes * 60 * 1000L)
+                },
+                enabled = !customTimeEnabled || (customMinutes.isNotEmpty() && (customMinutes.toIntOrNull() ?: 0) > 0)
             ) {
                 Text("Start")
             }
