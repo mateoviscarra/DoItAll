@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.mateoviscarra.doitall.calendar.CalendarManager
 import com.mateoviscarra.doitall.data.WorkoutPlan
 import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
+import com.mateoviscarra.doitall.data.persist.TimerStateStore
 
 private const val ROUTE_LIST = "workout_list"
 private const val ROUTE_DETAIL = "workout_detail"
@@ -18,7 +19,6 @@ private const val ROUTE_EDIT = "workout_edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_CALENDAR_SETTINGS = "calendar_settings"
 private const val ROUTE_CUSTOM = "custom_workout"
-private const val ROUTE_TIMERS = "timers"
 
 fun workoutDetailRoute(index: Int) = "$ROUTE_DETAIL/$index"
 
@@ -31,6 +31,7 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
     val context = LocalContext.current
     val store = remember { WorkoutStateStore(context.applicationContext) }
     val calendarManager = remember { CalendarManager(context.applicationContext) }
+    val timerStore = remember { TimerStateStore(context.applicationContext) }
 
     NavHost(
         navController = navController,
@@ -48,9 +49,8 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
                 onCustomClick = {
                     navController.navigate(ROUTE_CUSTOM)
                 },
-                onTimersClick = {
-                    navController.navigate(ROUTE_TIMERS)
-                }
+                timerStore = timerStore,
+                calendarManager = calendarManager
             )
         }
         composable(
@@ -115,12 +115,6 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
             CustomWorkoutScreen(
                 calendarManager = calendarManager,
                 onBack = { navController.popBackStack() }
-            )
-        }
-        composable(ROUTE_TIMERS) {
-            TimersScreen(
-                onBack = { navController.popBackStack() },
-                calendarManager = calendarManager
             )
         }
     }
