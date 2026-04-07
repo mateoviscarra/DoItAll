@@ -294,7 +294,18 @@ private fun SetsWeightRepsSection(
         },
         label = { Text("Sets") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        readOnly = false,
+        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            .also { source ->
+                LaunchedEffect(source) {
+                    source.interactions.collect {
+                        if (it is androidx.compose.foundation.interaction.FocusInteraction.Focus && setsText.isNotEmpty()) {
+                            setsText = ""
+                        }
+                    }
+                }
+            }
     )
 
     RowCheckbox(
@@ -341,7 +352,18 @@ private fun SetsWeightRepsSection(
                 },
                 label = { Text("Set ${i + 1} reps") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                readOnly = false,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    .also { source ->
+                        LaunchedEffect(source) {
+                            source.interactions.collect {
+                                if (it is androidx.compose.foundation.interaction.FocusInteraction.Focus && repI > 0) {
+                                    repI = 0
+                                }
+                            }
+                        }
+                    }
             )
         }
     } else {
@@ -355,7 +377,18 @@ private fun SetsWeightRepsSection(
             },
             label = { Text("Reps") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = false,
+            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                .also { source ->
+                    LaunchedEffect(source) {
+                        source.interactions.collect {
+                            if (it is androidx.compose.foundation.interaction.FocusInteraction.Focus && singleRepText.isNotEmpty()) {
+                                singleRepText = ""
+                            }
+                        }
+                    }
+                }
         )
     }
 
@@ -372,7 +405,18 @@ private fun SetsWeightRepsSection(
                 else "Weight"
             )
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        readOnly = false,
+        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            .also { source ->
+                LaunchedEffect(source) {
+                    source.interactions.collect {
+                        if (it is androidx.compose.foundation.interaction.FocusInteraction.Focus && weightText.isNotEmpty()) {
+                            weightText = ""
+                        }
+                    }
+                }
+            }
     )
 
     // Feature 1: Bodyweight checkbox
