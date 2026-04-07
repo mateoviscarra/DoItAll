@@ -2,6 +2,7 @@ package com.mateoviscarra.doitall.calendar
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -46,7 +47,6 @@ class CalendarManager(private val context: Context) {
         Context.MODE_PRIVATE
     )
 
-    private var googleSignInClient: GoogleSignInClient? = null
     private var cachedAccount: GoogleSignInAccount? = null
     private var cachedService: Calendar? = null
 
@@ -54,16 +54,13 @@ class CalendarManager(private val context: Context) {
         private const val KEY_SELECTED_CALENDAR = "selected_calendar_id"
     }
 
-    fun getGoogleSignInClient(): GoogleSignInClient {
-        googleSignInClient?.let { return it }
-
+    fun getGoogleSignInClient(activity: Activity): GoogleSignInClient {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestScopes(Scope(CALENDAR_SCOPES))
             .build()
 
-        googleSignInClient = GoogleSignIn.getClient(context, gso)
-        return googleSignInClient!!
+        return GoogleSignIn.getClient(activity, gso)
     }
 
     fun getAuthState(): CalendarAuthState {
@@ -90,8 +87,14 @@ class CalendarManager(private val context: Context) {
     }
 
     suspend fun disconnect() = withContext(Dispatchers.Main) {
-        val client = getGoogleSignInClient()
-        client.signOut()
+        val account = getLastSignedInAccount()
+        if (account != null) {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestScopes(Scope(CALENDAR_SCOPES))
+                .build()
+            GoogleSignIn.getClient(context, gso).signOut()
+        }
         cachedAccount = null
         cachedService = null
         prefs.edit().clear().apply()

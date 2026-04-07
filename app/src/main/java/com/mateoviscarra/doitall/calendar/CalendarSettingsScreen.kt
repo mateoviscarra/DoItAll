@@ -1,5 +1,6 @@
 package com.mateoviscarra.doitall.calendar
 
+import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +43,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -53,6 +55,8 @@ fun CalendarSettingsScreen(
     onBack: () -> Unit,
     calendarManager: CalendarManager
 ) {
+    val context = LocalContext.current
+    val activity = context as? Activity
     val scope = rememberCoroutineScope()
 
     var isConnecting by remember { mutableStateOf(false) }
@@ -63,13 +67,18 @@ fun CalendarSettingsScreen(
 
     val signInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
-    ) { _ ->
+    ) { result ->
         isConnecting = false
         connectionStatus = calendarManager.getAuthState()
         if (connectionStatus.isConnected) {
             successMessage = "Successfully connected to Google Calendar!"
         } else {
-            errorMessage = "Sign-in was cancelled or failed"
+            val resultCode = result.resultCode
+            errorMessage = when (resultCode) {
+                Activity.RESULT_CANCELED -> "Sign-in was cancelled"
+                Activity.RESULT_OK -> "Sign-in failed (no account selected)"
+                else -> "Sign-in failed (code: $resultCode)"
+            }
         }
     }
 
@@ -206,9 +215,13 @@ fun CalendarSettingsScreen(
             } else {
                 Button(
                     onClick = {
+                        if (activity == null) {
+                            errorMessage = "Cannot launch sign-in (activity unavailable)"
+                            return@Button
+                        }
                         isConnecting = true
                         errorMessage = null
-                        val signInClient = calendarManager.getGoogleSignInClient()
+                        val signInClient = calendarManager.getGoogleSignInClient(activity)
                         signInLauncher.launch(signInClient.signInIntent)
                     },
                     enabled = !isConnecting,
