@@ -77,32 +77,37 @@ fun CalendarSettingsScreen(
         Log.d(TAG, "Sign-in result: resultCode=${result.resultCode}, data=${result.data}")
         isConnecting = false
         
-        try {
-            val task = result.data?.let { GoogleSignIn.getSignedInAccountFromIntent(it) }
-            task?.addOnSuccessListener { account ->
-                Log.d(TAG, "Signed in account: ${account.email}")
-                connectionStatus = CalendarAuthState(
-                    isConnected = true,
-                    email = account.email,
-                    displayName = account.displayName
-                )
-                successMessage = "Successfully connected to Google Calendar!"
-            }?.addOnFailureListener { e ->
-                Log.e(TAG, "Sign-in failed", e)
-                // Check for cached account
-                val cachedStatus = calendarManager.getAuthState()
-                Log.d(TAG, "Cached account status: $cachedStatus")
-                connectionStatus = cachedStatus
-                
-                if (connectionStatus.isConnected) {
-                    successMessage = "Connected to Google Calendar!"
-                } else {
-                    errorMessage = "Sign-in failed: ${e.message}"
-                }
+        // First try silent sign-in - check if there's already a signed in account
+        val silentClient = calendarManager.getGoogleSignInClient(activity!!)
+        silentClient.silentSignIn().addOnSuccessListener { account ->
+            Log.d(TAG, "Silent sign-in success: ${account.email}")
+            connectionStatus = CalendarAuthState(
+                isConnected = true,
+                email = account.email,
+                displayName = account.displayName
+            )
+            successMessage = "Successfully connected to Google Calendar!"
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "Silent sign-in failed, trying explicit", e)
+            // Try explicit sign-in result
+            try {
+                val task = result.data?.let { GoogleSignIn.getSignedInAccountFromIntent(it) }
+                task?.addOnSuccessListener { account ->
+                    Log.d(TAG, "Explicit sign-in success: ${account.email}")
+                    connectionStatus = CalendarAuthState(
+                        isConnected = true,
+                        email = account.email,
+                        displayName = account.displayName
+                    )
+                    successMessage = "Successfully connected to Google Calendar!"
+                }?.addOnFailureListener { e2 ->
+                    Log.e(TAG, "Explicit sign-in also failed", e2)
+            errorMessage = "Sign-in failed (Error 10): App not configured. Add this app's SHA-1 to Google Cloud Console OAuth credentials, or use a release build with proper signing."
+        }
+            } catch (e2: Exception) {
+                Log.e(TAG, "Error handling sign-in", e2)
+                errorMessage = "Sign-in error: ${e2.message}"
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error handling sign-in result", e)
-            errorMessage = "Sign-in error: ${e.message}"
         }
     }
 
