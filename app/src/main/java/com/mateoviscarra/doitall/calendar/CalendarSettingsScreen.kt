@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -242,27 +243,9 @@ fun CalendarSettingsScreen(
             }
 
             if (connectionStatus.isConnected) {
-                // Calendar selection
-                var calendarList by remember { mutableStateOf<List<CalendarInfo>>(emptyList()) }
-                var selectedCalendarId by remember { mutableStateOf(calendarManager.getSelectedCalendarId()) }
-                var isLoadingCalendars by remember { mutableStateOf(false) }
-                var showCalendarDropdown by remember { mutableStateOf(false) }
-
-                LaunchedEffect(Unit) {
-                    isLoadingCalendars = true
-                    calendarManager.getAvailableCalendars().fold(
-                        onSuccess = { calendars ->
-                            calendarList = calendars
-                            // Ensure selected calendar still exists
-                            if (calendars.none { it.id == selectedCalendarId }) {
-                                selectedCalendarId = calendars.firstOrNull()?.id ?: "primary"
-                                calendarManager.setSelectedCalendarId(selectedCalendarId)
-                            }
-                        },
-                        onFailure = { /* ignore */ }
-                    )
-                    isLoadingCalendars = false
-                }
+                // Calendar selection - manual entry
+                var calendarIdInput by remember { mutableStateOf(calendarManager.getSelectedCalendarId()) }
+                var isEditing by remember { mutableStateOf(false) }
 
                 Card(
                     modifier = Modifier.fillMaxWidth()
@@ -277,54 +260,60 @@ fun CalendarSettingsScreen(
                             fontWeight = FontWeight.SemiBold
                         )
 
-                        if (isLoadingCalendars) {
-                            Text(
-                                text = "Loading calendars...",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        } else if (calendarList.isNotEmpty()) {
-                            Column {
-                                calendarList.forEach { calendar ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .then(
-                                                if (calendar.id == selectedCalendarId) {
-                                                    Modifier
-                                                } else Modifier
-                                            ),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        androidx.compose.material3.RadioButton(
-                                            selected = calendar.id == selectedCalendarId,
-                                            onClick = {
-                                                selectedCalendarId = calendar.id
-                                                calendarManager.setSelectedCalendarId(calendar.id)
-                                            }
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Column {
-                                            Text(
-                                                text = calendar.summary,
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                            if (calendar.id == "primary") {
-                                                Text(
-                                                    text = "Default calendar",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
-                                    }
+                        Text(
+                            text = "Enter the calendar ID to sync workouts to. Find it in Google Calendar settings (Calendar ID in the calendar settings page, usually looks like yourname@group.calendar.google.com)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        OutlinedTextField(
+                            value = calendarIdInput,
+                            onValueChange = { calendarIdInput = it },
+                            label = { Text("Calendar ID") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            enabled = isEditing || calendarIdInput.isEmpty()
+                        )
+
+                        if (calendarIdInput.isNotEmpty() && !isEditing) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = { isEditing = true },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Edit")
+                                }
+                                Button(
+                                    onClick = {
+                                        calendarManager.setSelectedCalendarId(calendarIdInput)
+                                        successMessage = "Calendar saved!"
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Save")
                                 }
                             }
-                        } else {
+                        } else if (isEditing) {
+                            Button(
+                                onClick = {
+                                    calendarManager.setSelectedCalendarId(calendarIdInput)
+                                    isEditing = false
+                                    successMessage = "Calendar saved!"
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = calendarIdInput.isNotEmpty()
+                            ) {
+                                Text("Save Calendar ID")
+                            }
+                        }
+
+                        if (calendarIdInput == "primary") {
                             Text(
-                                text = "No calendars found",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = "Using your primary/default calendar",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }

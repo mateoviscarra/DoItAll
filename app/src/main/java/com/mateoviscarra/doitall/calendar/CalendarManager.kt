@@ -226,10 +226,13 @@ class CalendarManager(private val context: Context) {
             invalidateServiceCache()
             val service = getCalendarService() ?: return@withContext Result.failure(Exception("Not signed in"))
 
+            Log.d(TAG, "Fetching calendar list...")
             val calendarList = service.calendarList().list()
                 .setMaxResults(100)
                 .setShowHidden(false)
                 .execute()
+            
+            Log.d(TAG, "Got ${calendarList.items?.size ?: 0} calendars")
 
             val calendars = calendarList.items?.map { entry ->
                 CalendarInfo(
@@ -243,6 +246,7 @@ class CalendarManager(private val context: Context) {
 
             Result.success(calendars)
         } catch (e: Exception) {
+            Log.e(TAG, "getAvailableCalendars failed", e)
             invalidateServiceCache()
             Result.failure(e)
         }
