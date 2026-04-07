@@ -238,7 +238,7 @@ fun WorkoutScheduleDialog(
         val timePickerState = rememberTimePickerState(
             initialHour = customStartTime.hour,
             initialMinute = customStartTime.minute,
-            is24Hour = true
+            is24Hour = false
         )
         AlertDialog(
             onDismissRequest = { showTimePicker = false },

@@ -1,6 +1,6 @@
 package com.mateoviscarra.doitall.calendar
 
-import android.app.Activity
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +56,6 @@ fun CalendarSettingsScreen(
     calendarManager: CalendarManager
 ) {
     val context = LocalContext.current
-    val activity = context as? Activity
     val scope = rememberCoroutineScope()
 
     var isConnecting by remember { mutableStateOf(false) }
@@ -73,12 +72,7 @@ fun CalendarSettingsScreen(
         if (connectionStatus.isConnected) {
             successMessage = "Successfully connected to Google Calendar!"
         } else {
-            val resultCode = result.resultCode
-            errorMessage = when (resultCode) {
-                Activity.RESULT_CANCELED -> "Sign-in was cancelled"
-                Activity.RESULT_OK -> "Sign-in failed (no account selected)"
-                else -> "Sign-in failed (code: $resultCode)"
-            }
+            errorMessage = "Sign-in was cancelled or failed"
         }
     }
 
@@ -215,13 +209,9 @@ fun CalendarSettingsScreen(
             } else {
                 Button(
                     onClick = {
-                        if (activity == null) {
-                            errorMessage = "Cannot launch sign-in (activity unavailable)"
-                            return@Button
-                        }
                         isConnecting = true
                         errorMessage = null
-                        val signInClient = calendarManager.getGoogleSignInClient(activity)
+                        val signInClient = calendarManager.getGoogleSignInClient()
                         signInLauncher.launch(signInClient.signInIntent)
                     },
                     enabled = !isConnecting,

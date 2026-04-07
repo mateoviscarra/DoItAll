@@ -118,32 +118,6 @@ fun SettingsScreen(
                 }
             }
 
-            if (authState.isConnected) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Calendar ID",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = calendarId,
-                            onValueChange = {
-                                calendarId = it
-                                calendarManager.setSelectedCalendarId(it)
-                            },
-                            label = { Text("Calendar ID") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            supportingText = {
-                                Text("Enter your calendar ID (e.g., your.email@gmail.com or a custom calendar ID from Google Calendar settings). Leave empty for primary calendar.")
-                            }
-                        )
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
 
             Card(
