@@ -77,33 +77,32 @@ fun CalendarSettingsScreen(
         Log.d(TAG, "Sign-in result: resultCode=${result.resultCode}, data=${result.data}")
         isConnecting = false
         
-        // Use getSignedInAccountFromIntent to properly extract the account
-        val account = result.data?.let { GoogleSignIn.getSignedInAccountFromIntent(it).result }
-        Log.d(TAG, "Signed in account from intent: $account")
-        
-        if (account != null) {
-            connectionStatus = CalendarAuthState(
-                isConnected = true,
-                email = account.email,
-                displayName = account.displayName
-            )
-            successMessage = "Successfully connected to Google Calendar!"
-        } else {
-            // Also check if there's any cached account
-            val cachedStatus = calendarManager.getAuthState()
-            Log.d(TAG, "Cached account status: $cachedStatus")
-            connectionStatus = cachedStatus
-            
-            if (connectionStatus.isConnected) {
-                successMessage = "Connected to Google Calendar!"
-            } else {
-                val msg = when (result.resultCode) {
-                    Activity.RESULT_CANCELED -> "Sign-in was cancelled"
-                    Activity.RESULT_OK -> "Sign-in completed but no account found"
-                    else -> "Sign-in failed (code: ${result.resultCode})"
+        try {
+            val task = result.data?.let { GoogleSignIn.getSignedInAccountFromIntent(it) }
+            task?.addOnSuccessListener { account ->
+                Log.d(TAG, "Signed in account: ${account.email}")
+                connectionStatus = CalendarAuthState(
+                    isConnected = true,
+                    email = account.email,
+                    displayName = account.displayName
+                )
+                successMessage = "Successfully connected to Google Calendar!"
+            }?.addOnFailureListener { e ->
+                Log.e(TAG, "Sign-in failed", e)
+                // Check for cached account
+                val cachedStatus = calendarManager.getAuthState()
+                Log.d(TAG, "Cached account status: $cachedStatus")
+                connectionStatus = cachedStatus
+                
+                if (connectionStatus.isConnected) {
+                    successMessage = "Connected to Google Calendar!"
+                } else {
+                    errorMessage = "Sign-in failed: ${e.message}"
                 }
-                errorMessage = msg
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling sign-in result", e)
+            errorMessage = "Sign-in error: ${e.message}"
         }
     }
 
