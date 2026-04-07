@@ -4,6 +4,7 @@ import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,21 +77,33 @@ fun CalendarSettingsScreen(
         Log.d(TAG, "Sign-in result: resultCode=${result.resultCode}, data=${result.data}")
         isConnecting = false
         
-        // Check if there's a signed-in account
-        val newStatus = calendarManager.getAuthState()
-        Log.d(TAG, "After sign-in, authState: $newStatus")
-        connectionStatus = newStatus
+        // Use getSignedInAccountFromIntent to properly extract the account
+        val account = result.data?.let { GoogleSignIn.getSignedInAccountFromIntent(it).result }
+        Log.d(TAG, "Signed in account from intent: $account")
         
-        if (connectionStatus.isConnected) {
+        if (account != null) {
+            connectionStatus = CalendarAuthState(
+                isConnected = true,
+                email = account.email,
+                displayName = account.displayName
+            )
             successMessage = "Successfully connected to Google Calendar!"
         } else {
-            // More detailed error message
-            val msg = when (result.resultCode) {
-                Activity.RESULT_CANCELED -> "Sign-in was cancelled"
-                Activity.RESULT_OK -> "Sign-in completed but no account found. Try again."
-                else -> "Sign-in failed (error code: ${result.resultCode})"
+            // Also check if there's any cached account
+            val cachedStatus = calendarManager.getAuthState()
+            Log.d(TAG, "Cached account status: $cachedStatus")
+            connectionStatus = cachedStatus
+            
+            if (connectionStatus.isConnected) {
+                successMessage = "Connected to Google Calendar!"
+            } else {
+                val msg = when (result.resultCode) {
+                    Activity.RESULT_CANCELED -> "Sign-in was cancelled"
+                    Activity.RESULT_OK -> "Sign-in completed but no account found"
+                    else -> "Sign-in failed (code: ${result.resultCode})"
+                }
+                errorMessage = msg
             }
-            errorMessage = msg
         }
     }
 
