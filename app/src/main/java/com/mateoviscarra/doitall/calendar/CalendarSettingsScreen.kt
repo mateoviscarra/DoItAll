@@ -1,6 +1,7 @@
 package com.mateoviscarra.doitall.calendar
 
-import android.content.Intent
+import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+private const val TAG = "CalendarSettingsScreen"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarSettingsScreen(
@@ -56,6 +59,7 @@ fun CalendarSettingsScreen(
     calendarManager: CalendarManager
 ) {
     val context = LocalContext.current
+    val activity = context as? Activity
     val scope = rememberCoroutineScope()
 
     var isConnecting by remember { mutableStateOf(false) }
@@ -64,15 +68,29 @@ fun CalendarSettingsScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
+    Log.d(TAG, "CalendarSettingsScreen init, connectionStatus: $connectionStatus")
+
     val signInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        Log.d(TAG, "Sign-in result: resultCode=${result.resultCode}, data=${result.data}")
         isConnecting = false
-        connectionStatus = calendarManager.getAuthState()
+        
+        // Check if there's a signed-in account
+        val newStatus = calendarManager.getAuthState()
+        Log.d(TAG, "After sign-in, authState: $newStatus")
+        connectionStatus = newStatus
+        
         if (connectionStatus.isConnected) {
             successMessage = "Successfully connected to Google Calendar!"
         } else {
-            errorMessage = "Sign-in was cancelled or failed"
+            // More detailed error message
+            val msg = when (result.resultCode) {
+                Activity.RESULT_CANCELED -> "Sign-in was cancelled"
+                Activity.RESULT_OK -> "Sign-in completed but no account found. Try again."
+                else -> "Sign-in failed (error code: ${result.resultCode})"
+            }
+            errorMessage = msg
         }
     }
 
@@ -209,9 +227,14 @@ fun CalendarSettingsScreen(
             } else {
                 Button(
                     onClick = {
+                        if (activity == null) {
+                            errorMessage = "Cannot start sign-in (Activity unavailable)"
+                            return@Button
+                        }
+                        Log.d(TAG, "Starting Google Sign-In...")
                         isConnecting = true
                         errorMessage = null
-                        val signInClient = calendarManager.getGoogleSignInClient()
+                        val signInClient = calendarManager.getGoogleSignInClient(activity)
                         signInLauncher.launch(signInClient.signInIntent)
                     },
                     enabled = !isConnecting,

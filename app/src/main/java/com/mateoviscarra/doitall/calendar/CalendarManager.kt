@@ -2,8 +2,10 @@ package com.mateoviscarra.doitall.calendar
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -22,6 +24,8 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+
+private const val TAG = "CalendarManager"
 
 const val CALENDAR_SCOPES = CalendarScopes.CALENDAR_EVENTS
 
@@ -66,8 +70,18 @@ class CalendarManager(private val context: Context) {
         return googleSignInClient!!
     }
 
+    fun getGoogleSignInClient(activity: Activity): GoogleSignInClient {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestScopes(Scope(CALENDAR_SCOPES))
+            .build()
+
+        return GoogleSignIn.getClient(activity, gso)
+    }
+
     fun getAuthState(): CalendarAuthState {
         val account = getLastSignedInAccount()
+        Log.d(TAG, "getAuthState: account = $account")
         return if (account != null && account.account != null) {
             CalendarAuthState(
                 isConnected = true,
