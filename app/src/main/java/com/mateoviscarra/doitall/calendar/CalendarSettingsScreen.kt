@@ -102,7 +102,14 @@ fun CalendarSettingsScreen(
                     successMessage = "Successfully connected to Google Calendar!"
                 }?.addOnFailureListener { e2 ->
                     Log.e(TAG, "Explicit sign-in also failed", e2)
-            errorMessage = "Sign-in failed (Error 10): App not configured. Add this app's SHA-1 to Google Cloud Console OAuth credentials, or use a release build with proper signing."
+            errorMessage = "Sign-in failed (Error 10). You need to add this app to Google Cloud Console:\n\n" +
+                "1. Go to console.cloud.google.com\n" +
+                "2. Select your project (or create one)\n" +
+                "3. Go to APIs & Services → Credentials\n" +
+                "4. Create OAuth client ID → Android\n" +
+                "5. Add this SHA-1: 4E:F3:4B:E1:20:1B:8D:F9:36:FE:5A:DD:03:6C:05:13:26:C2:33:81\n" +
+                "6. Package name: com.mateoviscarra.doitall\n\n" +
+                "Alternatively, use the old method in Settings → Calendar Settings."
         }
             } catch (e2: Exception) {
                 Log.e(TAG, "Error handling sign-in", e2)
