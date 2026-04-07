@@ -94,9 +94,16 @@ class CalendarManager(private val context: Context) {
     }
 
     private fun getLastSignedInAccount(): GoogleSignInAccount? {
-        cachedAccount?.let { return it }
-        cachedAccount = GoogleSignIn.getLastSignedInAccount(context)
-        return cachedAccount
+        // Always get fresh account from GoogleSignIn, don't use cache
+        // cachedAccount is only used for initial state check
+        val account = GoogleSignIn.getLastSignedInAccount(context)
+        cachedAccount = account
+        return account
+    }
+
+    fun invalidateAccountCache() {
+        cachedAccount = null
+        cachedService = null
     }
 
     fun isConnected(): Boolean {
@@ -121,32 +128,71 @@ class CalendarManager(private val context: Context) {
 
     @Suppress("DEPRECATION")
     private fun requestAuthToken(): String? {
-        val account = getLastSignedInAccount() ?: return null
-        val email = account.email ?: return null
+        val account = getLastSignedInAccount() ?: run {
+            Log.e(TAG, "requestAuthToken: no account")
+            return null
+        }
+        val email = account.email ?: run {
+            Log.e(TAG, "requestAuthToken: no email")
+            return null
+        }
 
+        Log.d(TAG, "requestAuthToken for: $email")
+
+        // Use AccountManager with the correct scope format
         val accountManager = AccountManager.get(context)
         val googleAccount = Account(email, "com.google")
 
         return try {
+            // Try with oauth2: prefix to get OAuth token instead of legacy auth token
             val bundle = accountManager.getAuthToken(
                 googleAccount,
-                CALENDAR_SCOPES,
+                "oauth2:${CALENDAR_SCOPES}",
                 false,
                 null,
                 null
             ).result
-            bundle?.getString(AccountManager.KEY_AUTHTOKEN)
+            var token = bundle?.getString(AccountManager.KEY_AUTHTOKEN)
+            
+            // If that didn't work, try the direct scope
+            if (token == null) {
+                Log.d(TAG, "Trying with direct scope")
+                val bundle2 = accountManager.getAuthToken(
+                    googleAccount,
+                    CALENDAR_SCOPES,
+                    false,
+                    null,
+                    null
+                ).result
+                token = bundle2?.getString(AccountManager.KEY_AUTHTOKEN)
+            }
+            
+            Log.d(TAG, "requestAuthToken: got token=${token != null}")
+            token
         } catch (e: Exception) {
+            Log.e(TAG, "requestAuthToken failed", e)
             null
         }
     }
 
     private suspend fun getCalendarService(): Calendar? = withContext(Dispatchers.IO) {
-        cachedService?.let { return@withContext it }
+        // Always try to get fresh account and token
+        invalidateAccountCache()
+        
+        val account = getLastSignedInAccount() ?: run {
+            Log.e(TAG, "getCalendarService: no account")
+            return@withContext null
+        }
+        val email = account.email ?: run {
+            Log.e(TAG, "getCalendarService: no email")
+            return@withContext null
+        }
+        val authToken = requestAuthToken() ?: run {
+            Log.e(TAG, "getCalendarService: no auth token")
+            return@withContext null
+        }
 
-        val account = getLastSignedInAccount() ?: return@withContext null
-        val email = account.email ?: return@withContext null
-        val authToken = requestAuthToken() ?: return@withContext null
+        Log.d(TAG, "getCalendarService: creating service for $email")
 
         try {
             val transport = NetHttpTransport()
@@ -165,12 +211,14 @@ class CalendarManager(private val context: Context) {
             cachedService = service
             service
         } catch (e: Exception) {
+            Log.e(TAG, "getCalendarService failed", e)
             null
         }
     }
 
     fun invalidateServiceCache() {
         cachedService = null
+        cachedAccount = null
     }
 
     suspend fun getAvailableCalendars(): Result<List<CalendarInfo>> = withContext(Dispatchers.IO) {
