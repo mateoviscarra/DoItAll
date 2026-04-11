@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
@@ -109,6 +110,7 @@ fun WorkoutListScreen(
     var longVibration by remember { mutableStateOf(true) }
     var notificationsEnabled by remember { mutableStateOf(true) }
     var customTimeEnabled by remember { mutableStateOf(false) }
+    var onlyToCalendar by remember { mutableStateOf(false) }
     
     var showTimerDialog by remember { mutableStateOf(false) }
     var selectedTimerType by remember { mutableStateOf<TimerType?>(null) }
@@ -470,6 +472,22 @@ fun WorkoutListScreen(
                                 onCheckedChange = { customTimeEnabled = it }
                             )
                         }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.CalendarMonth, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Only to Calendar")
+                            }
+                            Switch(
+                                checked = onlyToCalendar,
+                                onCheckedChange = { onlyToCalendar = it }
+                            )
+                        }
                         
                         if (!hasNotificationPermission && notificationsEnabled) {
                             OutlinedButton(
@@ -545,27 +563,71 @@ fun WorkoutListScreen(
             onStart = { description, customDurationMs ->
                 showTimerDialog = false
                 val duration = if (customTimeEnabled && customDurationMs > 0) customDurationMs else timerDurationMs
-                val timerId = timerCounter++
-                val job = startTimer(
-                    context = context,
-                    durationMs = duration,
-                    timerName = selectedTimerType!!.name,
-                    description = description,
-                    longVibration = longVibration,
-                    notificationsEnabled = notificationsEnabled,
-                    calendarManager = calendarManager,
-                    onComplete = {
-                        activeTimers = activeTimers.filter { it.id != timerId }
+                
+                if (onlyToCalendar) {
+                    val timerName = selectedTimerType!!.name
+                    if (timerName == "Rest") {
+                        // Rest timers don't create calendar events
+                    } else {
+                        val finalDescription = if (description.isNotBlank()) "$timerName: $description" else timerName
+                        scope.launch {
+                            val result = calendarManager.createWorkoutEvent(
+                                title = finalDescription,
+                                date = LocalDate.now(),
+                                startHour = LocalTime.now().hour,
+                                startMinute = LocalTime.now().minute,
+                                durationMinutes = (duration / 60000).toInt(),
+                                description = "Logged via DoItAll"
+                            )
+                            result.onFailure { e ->
+                                android.util.Log.e("WorkoutList", "Calendar event failed: ${e.message}")
+                            }
+                        }
                     }
-                )
-                activeTimers = activeTimers + ActiveTimer(
-                    id = timerId,
-                    name = selectedTimerType!!.name,
-                    description = description.ifBlank { "Running" },
-                    remainingMs = duration,
-                    startedAtEpochMs = System.currentTimeMillis(),
-                    job = job
-                )
+                } else {
+                    val timerId = timerCounter++
+                    val timerName = selectedTimerType!!.name
+                    val timerDescription = description.ifBlank { "Running" }
+                    
+                    // Create calendar event immediately when timer starts (except for Rest)
+                    if (timerName != "Rest") {
+                        val finalDescription = if (description.isNotBlank()) "$timerName: $description" else timerName
+                        scope.launch {
+                            val result = calendarManager.createWorkoutEvent(
+                                title = finalDescription,
+                                date = LocalDate.now(),
+                                startHour = LocalTime.now().hour,
+                                startMinute = LocalTime.now().minute,
+                                durationMinutes = (duration / 60000).toInt(),
+                                description = "Timer started via DoItAll"
+                            )
+                            result.onFailure { e ->
+                                android.util.Log.e("WorkoutList", "Calendar event failed: ${e.message}")
+                            }
+                        }
+                    }
+                    
+                    val job = startTimer(
+                        context = context,
+                        durationMs = duration,
+                        timerName = timerName,
+                        description = description,
+                        longVibration = longVibration,
+                        notificationsEnabled = notificationsEnabled,
+                        calendarManager = calendarManager,
+                        onComplete = {
+                            activeTimers = activeTimers.filter { it.id != timerId }
+                        }
+                    )
+                    activeTimers = activeTimers + ActiveTimer(
+                        id = timerId,
+                        name = timerName,
+                        description = timerDescription,
+                        remainingMs = duration,
+                        startedAtEpochMs = System.currentTimeMillis(),
+                        job = job
+                    )
+                }
                 selectedTimerType = null
             }
         )
@@ -683,6 +745,27 @@ private fun startTimer(
         
         if (notificationsEnabled) {
             showNotification(context, timerName, description)
+        }
+        
+        onComplete()
+    }
+}
+
+private fun startTimerNoAlert(
+    context: Context,
+    durationMs: Long,
+    timerName: String,
+    description: String,
+    calendarManager: CalendarManager,
+    onComplete: () -> Unit
+): Job {
+    val scope = CoroutineScope(Dispatchers.Default)
+    
+    return scope.launch {
+        var remainingMs = durationMs
+        while (remainingMs > 0) {
+            delay(1000)
+            remainingMs -= 1000
         }
         
         val finalDescription = if (description.isNotBlank()) "$timerName: $description" else timerName
