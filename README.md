@@ -1,33 +1,46 @@
 # DoItAll
 
-Starter project for an Android app that will eventually include multiple modules.
+Android workout tracker with productivity timers and Google Calendar sync.
 
-## Current scope
+## Features
 
-The first module is a workout tracker with hardcoded training plans.
+### Workout Tracking
+- Hardcoded training plans (Push/Pull/Legs/Accessory)
+- Shows muscle groups trained each day
+- Alternative exercises that target similar muscles (carousel navigation)
+- Per-exercise logging: sets, reps, weight, comments
+- Bodyweight exercise support with optional added weight
+- Unit toggle: kg or lbs
 
-The app should answer:
+### Timers & Productivity
+- **Timer types**: Productivity (60 min), Reading (60 min), Rest (2 min)
+- Productivity timer quick options: Guitar, Programming, Applying
+- Custom duration option
+- Long vibration toggle on completion
+- Notification on completion
+- **Only to Calendar mode**: Instantly log a session to Google Calendar without running a timer
+- When running a timer, calendar event is created at start time (not completion)
+- Rest timers do not create calendar events
 
-- Which muscle group(s) are trained today, or whether it is a rest day
-- Which exercises to perform, with sets and reps
-- Which alternative exercises train similar muscles
+### Google Calendar Integration
+- Sync workouts to Google Calendar
+- Custom calendar selection
+- Calendar events include exercise details, weights, and reps
+- Secure credential storage on device
 
-## Data source
+### Data Persistence
+- Exercise logs saved per day with shared exercise catalog
+- Carousel bindings (which exercise per slot) stored per day
+- Timer state persists across app restarts
 
-The initial workout plan is stored in `data/workout_plan.json`.
-Notes are standardized to English while preserving progressive overload context
-(up, same, down) and practical notes.
+## Data Source
 
-On device, the Android app copies this to `app/src/main/assets/workout_plan.json`.
+Workout plan stored in `data/workout_plan.json`. On device, copied to `app/src/main/assets/workout_plan.json`.
 
-When loading, the app builds a **shared exercise catalog**: the same display name (case-insensitive)
-maps to one **stable id**, so a movement that appears on multiple days shares **one saved log**
-(sets, weight, reps, comment). Carousel **bindings** (which id each page uses) and **last page index**
-per slot are still stored **per day** in DataStore (`WorkoutStateStore`, schema v2 key
-`workout_log_json_v2`). Older saved data under the previous key is not migrated.
+The app builds a **shared exercise catalog**: the same display name (case-insensitive) maps to one **stable id**, so a movement that appears on multiple days shares **one saved log** (sets, weight, reps, comment). Carousel **bindings** (which id each page uses) and **last page index** per slot are stored **per day** in DataStore (`WorkoutStateStore`, schema v2 key `workout_log_json_v2`).
 
-## Next iterations
-
-- Add workout history and progression tracking over time
-- Allow editing the exercise catalog (currently hardcoded per slot)
-- Build Android UI and workflows
+## Tech Stack
+- Kotlin + Jetpack Compose
+- DataStore for persistence
+- Google Calendar API
+- Material Design 3
