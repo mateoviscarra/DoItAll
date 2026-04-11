@@ -338,16 +338,16 @@ private fun SetsWeightRepsSection(
         repeat(state.sets) { i ->
             val repVal = state.repsPerSet?.getOrNull(i) ?: 0
             var repI by remember(state.sets, state.usePerSetReps, i, repVal) {
-                mutableIntStateOf(repVal)
+                mutableStateOf(repVal.toString())
             }
             OutlinedTextField(
-                value = repI.toString(),
+                value = repI,
                 onValueChange = { raw ->
-                    val digits = raw.filter { it.isDigit() }.take(4)
-                    repI = digits.toIntOrNull() ?: 0
+                    repI = raw.filter { it.isDigit() }.take(4)
+                    val num = repI.toIntOrNull()
                     val list = (state.repsPerSet ?: List(state.sets) { 0 }).toMutableList()
                     while (list.size < state.sets) list.add(0)
-                    if (i < list.size) list[i] = repI
+                    if (i < list.size) list[i] = num ?: 0
                     onChange(state.copy(repsPerSet = list))
                 },
                 label = { Text("Set ${i + 1} reps") },
@@ -358,8 +358,8 @@ private fun SetsWeightRepsSection(
                     .also { source ->
                         LaunchedEffect(source) {
                             source.interactions.collect {
-                                if (it is androidx.compose.foundation.interaction.FocusInteraction.Focus && repI > 0) {
-                                    repI = 0
+                                if (it is androidx.compose.foundation.interaction.FocusInteraction.Focus && repI.isNotEmpty()) {
+                                    repI = ""
                                 }
                             }
                         }
