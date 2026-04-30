@@ -574,7 +574,7 @@ private fun formatWeight(log: ExerciseLogState): String {
             } else {
                 "kg"
             }
-            "$weightValue $unitLabel"
+            "Bodyweight + $weightValue $unitLabel"
         }
         weightValue.isEmpty() -> "—"
         else -> {
