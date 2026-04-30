@@ -428,6 +428,15 @@ private fun SetsWeightRepsSection(
         }
     )
 
+    // Straps checkbox
+    RowCheckbox(
+        label = "Uses straps",
+        checked = state.usesStraps,
+        onCheckedChange = { checked ->
+            onChange(state.copy(usesStraps = checked))
+        }
+    )
+
     // Feature 1: kg / lbs toggle using FilterChip — only show if weight doesn't already have a unit
     val hasWeightUnit = weightText.contains(Regex("""(?i)(kg|kgs|lbs?|each|per ?side)"""))
     if (!hasWeightUnit) {

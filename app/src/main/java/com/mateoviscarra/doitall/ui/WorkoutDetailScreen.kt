@@ -315,6 +315,9 @@ fun WorkoutDetailScreen(
                                 if (weightStr.isNotEmpty() && weightStr != "Bodyweight") {
                                     append(" @ $weightStr")
                                 }
+                                if (log?.usesStraps == true) {
+                                    append(" (Straps)")
+                                }
                                 if (index < doneExerciseIds.size - 1) {
                                     append("\n")
                                 }
@@ -536,6 +539,13 @@ private fun VariationCard(
                     text = "Weight: ${formatWeight(log)}",
                     style = MaterialTheme.typography.bodyMedium
                 )
+                if (log.usesStraps) {
+                    Text(
+                        text = "Straps",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             if (log.comment.isNotBlank()) {

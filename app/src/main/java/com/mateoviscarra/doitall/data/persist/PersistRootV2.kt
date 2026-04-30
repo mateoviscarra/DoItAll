@@ -56,6 +56,7 @@ private fun ExerciseLogState.toJson(): JSONObject {
         .put("isCardio", isCardio)
         .put("weightUnit", weightUnit.name.lowercase())
         .put("isBodyweight", isBodyweight)
+        .put("usesStraps", usesStraps)
     if (repsSingle != null) o.put("repsSingle", repsSingle)
     if (repsPerSet != null) {
         val a = JSONArray()
@@ -83,7 +84,8 @@ private fun parseExerciseLog(json: JSONObject): ExerciseLogState {
         duration = if (json.has("duration")) json.optString("duration").ifBlank { null } else null,
         intensity = if (json.has("intensity")) json.optString("intensity").ifBlank { null } else null,
         weightUnit = weightUnit,
-        isBodyweight = json.optBoolean("isBodyweight", false)
+        isBodyweight = json.optBoolean("isBodyweight", false),
+        usesStraps = json.optBoolean("usesStraps", false)
     )
 }
 

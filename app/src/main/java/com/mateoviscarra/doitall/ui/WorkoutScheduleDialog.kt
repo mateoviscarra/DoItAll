@@ -214,9 +214,7 @@ fun WorkoutScheduleDialog(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            customDate = Instant.ofEpochMilli(millis)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
+                            customDate = LocalDate.ofEpochDay(millis / (24 * 60 * 60 * 1000))
                         }
                         showDatePicker = false
                     }
