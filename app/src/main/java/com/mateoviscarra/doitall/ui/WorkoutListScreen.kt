@@ -102,6 +102,8 @@ fun WorkoutListScreen(
     onDaySelected: (index: Int) -> Unit,
     onSettingsClick: () -> Unit,
     onCustomClick: () -> Unit,
+    onCategoryManageClick: () -> Unit,
+    onDayAssignClick: () -> Unit,
     timerStore: TimerStateStore,
     calendarManager: CalendarManager
 ) {
@@ -397,6 +399,35 @@ fun WorkoutListScreen(
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+            // Plan Management section
+            item {
+                Text(
+                    text = "Plan Management",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onCategoryManageClick,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Categories")
+                    }
+                    OutlinedButton(
+                        onClick = onDayAssignClick,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Days")
                     }
                 }
             }

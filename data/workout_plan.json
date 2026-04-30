@@ -1,165 +1,82 @@
 {
+  "version": 1,
   "metadata": {
-    "version": 2,
     "language": "en",
     "notes": [
-      "Unless specified otherwise, start unilateral exercises with the left side.",
-      "Progress markers: up = improved from previous workout, same = maintained, down = lower than previous workout.",
-      "MBA X means one extra set with X kg less weight.",
-      "DSX means drop set with X kg immediately after the final set."
+      "Default values are suggestions - adjust as needed.",
+      "Progress markers: up = improved, same = maintained, down = regression."
     ]
   },
-  "schedule": [
+  "categories": [
+    {
+      "id": "push",
+      "name": "Push",
+      "exercises": [
+        { "id": "dips", "name": "Dips", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "Bodyweight" },
+        { "id": "barbell_bench_press", "name": "Barbell bench press", "defaultSets": 3, "defaultReps": "6", "defaultLoad": "80 kg" },
+        { "id": "incline_dumbbell_press", "name": "Incline dumbbell press", "defaultSets": 2, "defaultReps": "10", "defaultLoad": "32 kg each" },
+        { "id": "seated_db_lateral_raise", "name": "Seated dumbbell lateral raises", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "14 kg each" },
+        { "id": "cable_triceps_ext", "name": "Overhead cable triceps extension", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "30 kg" },
+        { "id": "cable_triceps_pushdown", "name": "Cable triceps pushdown", "defaultSets": 2, "defaultReps": "10", "defaultLoad": "35 kg" },
+        { "id": "incline_db_flies", "name": "Incline dumbbell flies", "defaultSets": 2, "defaultReps": "12", "defaultLoad": "20 kg" },
+        { "id": "push_ups", "name": "Push-ups", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "Bodyweight" },
+        { "id": "machine_chest_press", "name": "Machine chest press", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" }
+      ]
+    },
+    {
+      "id": "pull",
+      "name": "Pull",
+      "exercises": [
+        { "id": "pull_ups", "name": "Pull-ups", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "Bodyweight" },
+        { "id": "tbar_row", "name": "T-bar row (neutral grip)", "defaultSets": 2, "defaultReps": "9", "defaultLoad": "50 kg" },
+        { "id": "face_pulls", "name": "Face pulls", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "25 kg" },
+        { "id": "barbell_curl", "name": "Barbell curl", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "30 kg" },
+        { "id": "hammer_curl", "name": "Hammer curl", "defaultSets": 2, "defaultReps": "12", "defaultLoad": "16 kg each" },
+        { "id": "lat_pulldown", "name": "Lat pulldown", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" },
+        { "id": "cable_row", "name": "Seated cable row", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "50 kg" },
+        { "id": "rdl", "name": "Romanian deadlift", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" }
+      ]
+    },
+    {
+      "id": "legs",
+      "name": "Legs",
+      "exercises": [
+        { "id": "squat", "name": "Barbell squat", "defaultSets": 3, "defaultReps": "8", "defaultLoad": "80 kg" },
+        { "id": "leg_press", "name": "Leg press", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "120 kg" },
+        { "id": "leg_extension", "name": "Leg extension", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "40 kg" },
+        { "id": "leg_curl", "name": "Lying leg curl", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "35 kg" },
+        { "id": "calf_raise", "name": "Standing calf raise", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "40 kg" },
+        { "id": "hip_thrust", "name": "Hip thrust", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" },
+        { "id": "goblet_squat", "name": "Goblet squat", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "24 kg" },
+        { "id": "bulgarian_split_squat", "name": "Bulgarian split squat", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "20 kg" }
+      ]
+    },
+    {
+      "id": "accessory",
+      "name": "Accessory",
+      "exercises": [
+        { "id": "plank", "name": "Plank", "defaultSets": 3, "defaultReps": "60", "defaultLoad": "sec" },
+        { "id": "cable_crunch", "name": "Cable crunch", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "30 kg" },
+        { "id": "hanging_leg_raise", "name": "Hanging leg raise", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "Bodyweight" },
+        { "id": "ab_wheel", "name": "Ab wheel rollout", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "Bodyweight" },
+        { "id": "running", "name": "Running", "defaultSets": 1, "defaultReps": "20", "defaultLoad": "min" },
+        { "id": "cycling", "name": "Cycling", "defaultSets": 1, "defaultReps": "30", "defaultLoad": "min" },
+        { "id": "foam_rolling", "name": "Foam rolling", "defaultSets": 1, "defaultReps": "5", "defaultLoad": "min" }
+      ]
+    }
+  ],
+  "days": [
     {
       "day": "Push A",
       "muscle_groups": ["chest", "shoulders", "triceps"],
       "is_rest_day": false,
       "exercises": [
-        {
-          "name": "Dips",
-          "sets": 3,
-          "reps": "10",
-          "load": "Bodyweight + 15 kg",
-          "progress": "up",
-          "progress_note": "+2 reps",
-          "alternatives": ["Weighted push-ups", "Machine chest press"]
-        },
-        {
-          "name": "Barbell bench press",
-          "sets": 3,
-          "reps": "6",
-          "load": "80 kg",
-          "progress": "same",
-          "alternatives": ["Machine chest press", "Dumbbell bench press"]
-        },
-        {
-          "name": "Incline dumbbell press",
-          "sets": 2,
-          "reps": "10",
-          "load": "32 kg each",
-          "progress": "same",
-          "alternatives": ["Incline barbell press", "Incline machine press"]
-        },
-        {
-          "name": "Seated dumbbell lateral raises",
-          "sets": 3,
-          "reps": "15",
-          "load": "14 kg each",
-          "progress": "same",
-          "alternatives": ["Cable lateral raises", "Machine deltoid raise"]
-        },
-        {
-          "name": "Overhead cable triceps extension",
-          "sets": 3,
-          "reps": "12",
-          "load": "30 kg",
-          "progress": "same",
-          "alternatives": ["Skull crushers", "Overhead dumbbell extension"]
-        },
-        {
-          "name": "Cable triceps pushdown",
-          "sets": 2,
-          "reps": "10",
-          "load": "35 kg",
-          "progress": "same",
-          "alternatives": ["Rope pushdown", "Dips"]
-        }
-      ]
-    },
-    {
-      "day": "Pull A",
-      "muscle_groups": ["back", "biceps", "rear delts"],
-      "is_rest_day": false,
-      "notes": ["Use straps.", "Include Kelso shrugs where specified."],
-      "exercises": [
-        {
-          "name": "T-bar row (neutral grip)",
-          "sets": 2,
-          "reps": "9",
-          "load": "50 kg",
-          "progress": "same",
-          "alternatives": ["Chest-supported row", "Barbell row"]
-        },
-        {
-          "name": "Pull-ups",
-          "sets": 2,
-          "reps": "8",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Lat pulldown", "Assisted pull-ups"]
-        },
-        {
-          "name": "Preacher curls",
-          "sets": 2,
-          "reps": "9",
-          "load": "40 kg",
-          "progress": "same",
-          "alternatives": ["Machine preacher curl", "Cable curl"]
-        },
-        {
-          "name": "Seated row machine",
-          "sets": 2,
-          "reps": "6",
-          "load": "80 kg",
-          "progress": "same",
-          "alternatives": ["Cable row", "Single-arm dumbbell row"]
-        },
-        {
-          "name": "Overhead face pulls",
-          "sets": 3,
-          "reps": "10",
-          "load": "25 kg",
-          "progress": "same",
-          "alternatives": ["Rear delt cable fly", "Reverse pec deck"]
-        }
-      ]
-    },
-    {
-      "day": "Legs A",
-      "muscle_groups": ["quads", "glutes", "calves"],
-      "is_rest_day": false,
-      "notes": ["Time-limited session."],
-      "exercises": [
-        {
-          "name": "Back squat (full depth)",
-          "sets": 3,
-          "reps": "8",
-          "load": "80 kg",
-          "progress": "same",
-          "alternatives": ["Hack squat", "Front squat"]
-        },
-        {
-          "name": "Walking lunges",
-          "sets": 2,
-          "reps": "10 steps per side",
-          "load": "45 kg barbell",
-          "progress": "same",
-          "alternatives": ["Dumbbell lunges", "Split squats"]
-        },
-        {
-          "name": "Leg extension",
-          "sets": 2,
-          "reps": "12",
-          "load": "100 kg",
-          "progress": "same",
-          "alternatives": ["Sissy squat", "Spanish squat"]
-        },
-        {
-          "name": "Lying leg curls",
-          "sets": 2,
-          "reps": "12",
-          "load": "70 kg",
-          "progress": "same",
-          "alternatives": ["Seated leg curl", "Nordic curl"]
-        },
-        {
-          "name": "Standing calf raise machine",
-          "sets": 3,
-          "reps": "12",
-          "load": "70 kg",
-          "progress": "same",
-          "alternatives": ["Seated calf raise", "Leg press calf raises"]
-        }
+        { "exerciseId": "dips" },
+        { "exerciseId": "barbell_bench_press", "alternatives": ["machine_chest_press", "push_ups"] },
+        { "exerciseId": "incline_dumbbell_press" },
+        { "exerciseId": "seated_db_lateral_raise" },
+        { "exerciseId": "cable_triceps_ext" },
+        { "exerciseId": "cable_triceps_pushdown" }
       ]
     },
     {
@@ -167,198 +84,74 @@
       "muscle_groups": ["chest", "shoulders", "triceps"],
       "is_rest_day": false,
       "exercises": [
-        {
-          "name": "Incline dumbbell press",
-          "sets": 3,
-          "reps": "10",
-          "load": "32 kg each",
-          "progress": "same",
-          "alternatives": ["Incline machine press", "Incline barbell press"]
-        },
-        {
-          "name": "Seated barbell overhead press",
-          "sets": 3,
-          "reps": "6",
-          "load": "50 kg",
-          "progress": "same",
-          "alternatives": ["Machine shoulder press", "Dumbbell shoulder press"]
-        },
-        {
-          "name": "Machine chest press",
-          "sets": 2,
-          "reps": "10",
-          "load": "90 kg",
-          "progress": "same",
-          "alternatives": ["Barbell bench press", "Dumbbell bench press"]
-        },
-        {
-          "name": "Cable lateral raises",
-          "sets": 3,
-          "reps": "15",
-          "load": "7.5 kg",
-          "progress": "same",
-          "alternatives": ["Seated dumbbell lateral raise", "Machine deltoid raise"]
-        },
-        {
-          "name": "Dips",
-          "sets": 2,
-          "reps": "10",
-          "load": "Bodyweight + 15 kg",
-          "progress": "same",
-          "alternatives": ["Close-grip push-ups", "Bench dips"]
-        },
-        {
-          "name": "Overhead triceps extension (rope)",
-          "sets": 2,
-          "reps": "12",
-          "load": "30 kg",
-          "progress": "same",
-          "alternatives": ["Skull crushers", "Cable pushdown"]
-        }
+        { "exerciseId": "push_ups" },
+        { "exerciseId": "incline_db_flies" },
+        { "exerciseId": "machine_chest_press" },
+        { "exerciseId": "seated_db_lateral_raise" },
+        { "exerciseId": "cable_triceps_pushdown" },
+        { "exerciseId": "dips" }
+      ]
+    },
+    {
+      "day": "Pull A",
+      "muscle_groups": ["back", "biceps", "rear delts"],
+      "is_rest_day": false,
+      "notes": ["Use straps"],
+      "exercises": [
+        { "exerciseId": "pull_ups" },
+        { "exerciseId": "tbar_row", "alternatives": ["cable_row"] },
+        { "exerciseId": "face_pulls" },
+        { "exerciseId": "barbell_curl" },
+        { "exerciseId": "hammer_curl" },
+        { "exerciseId": "lat_pulldown" }
       ]
     },
     {
       "day": "Pull B",
       "muscle_groups": ["back", "biceps", "rear delts"],
       "is_rest_day": false,
-      "notes": ["Use straps.", "Include Kelso shrugs where specified."],
       "exercises": [
-        {
-          "name": "Cable pullovers",
-          "sets": 2,
-          "reps": "10",
-          "load": "30 kg",
-          "progress": "same",
-          "alternatives": ["Dumbbell pullover", "Straight-arm lat pulldown"]
-        },
-        {
-          "name": "Lat pulldown",
-          "sets": 2,
-          "reps": "8",
-          "load": "50 kg per side",
-          "progress": "same",
-          "alternatives": ["Pull-ups", "Machine pulldown"]
-        },
-        {
-          "name": "Machine vertical row",
-          "sets": 2,
-          "reps": "9",
-          "load": "95 kg",
-          "progress": "same",
-          "alternatives": ["Chest-supported row", "Cable row"]
-        },
-        {
-          "name": "Hammer curls",
-          "sets": 2,
-          "reps": "8",
-          "load": "22 kg each",
-          "progress": "same",
-          "alternatives": ["Cross-body curls", "Rope hammer curls"]
-        },
-        {
-          "name": "Machine rear delt fly",
-          "sets": 2,
-          "reps": "8",
-          "load": "68 kg",
-          "progress": "same",
-          "alternatives": ["Reverse pec deck", "Cable rear delt fly"]
-        },
-        {
-          "name": "Cable biceps curls",
-          "sets": 2,
-          "reps": "6",
-          "load": "35 kg",
-          "progress": "same",
-          "alternatives": ["Preacher curls", "EZ-bar curls"]
-        }
+        { "exerciseId": "lat_pulldown" },
+        { "exerciseId": "rdl" },
+        { "exerciseId": "face_pulls" },
+        { "exerciseId": "hammer_curl" },
+        { "exerciseId": "cable_row" },
+        { "exerciseId": "pull_ups" }
+      ]
+    },
+    {
+      "day": "Legs A",
+      "muscle_groups": ["quads", "hamstrings", "glutes", "calves"],
+      "is_rest_day": false,
+      "exercises": [
+        { "exerciseId": "squat" },
+        { "exerciseId": "leg_press" },
+        { "exerciseId": "leg_extension" },
+        { "exerciseId": "leg_curl" },
+        { "exerciseId": "calf_raise" }
       ]
     },
     {
       "day": "Legs B",
-      "muscle_groups": ["hamstrings", "glutes", "calves"],
+      "muscle_groups": ["quads", "hamstrings", "glutes", "calves"],
       "is_rest_day": false,
-      "notes": ["Use straps where needed."],
       "exercises": [
-        {
-          "name": "Barbell Romanian deadlift",
-          "sets": 3,
-          "reps": "8",
-          "load": "80 kg",
-          "progress": "same",
-          "alternatives": ["Dumbbell RDL", "Conventional RDL"]
-        },
-        {
-          "name": "Hip thrust machine",
-          "sets": 3,
-          "reps": "10",
-          "load": "60 kg",
-          "progress": "same",
-          "alternatives": ["Barbell hip thrust", "Glute bridge"]
-        },
-        {
-          "name": "Machine leg press",
-          "sets": 3,
-          "reps": "12",
-          "load": "164 kg",
-          "progress": "same",
-          "alternatives": ["Hack squat", "High-foot leg press"]
-        },
-        {
-          "name": "Leg extension",
-          "sets": 2,
-          "reps": "12",
-          "load": "90 kg",
-          "progress": "same",
-          "alternatives": ["Sissy squat", "Spanish squat"]
-        },
-        {
-          "name": "Lying leg curls",
-          "sets": 2,
-          "reps": "10",
-          "load": "80 kg",
-          "progress": "same",
-          "alternatives": ["Seated leg curl", "Nordic curl"]
-        },
-        {
-          "name": "Standing calf raise machine",
-          "sets": 3,
-          "reps": "12",
-          "load": "65 kg",
-          "progress": "same",
-          "alternatives": ["Seated calf raise", "Donkey calf raise"]
-        }
+        { "exerciseId": "goblet_squat" },
+        { "exerciseId": "hip_thrust" },
+        { "exerciseId": "leg_curl" },
+        { "exerciseId": "bulgarian_split_squat" },
+        { "exerciseId": "calf_raise" }
       ]
     },
     {
       "day": "Abs",
-      "muscle_groups": ["abdominals", "hip flexors"],
+      "muscle_groups": ["abs"],
       "is_rest_day": false,
-      "notes": ["Pick 2 to 3 exercises depending on time."],
       "exercises": [
-        {
-          "name": "Crunch machine",
-          "sets": 2,
-          "reps": "12",
-          "load": "68 kg",
-          "progress": "same",
-          "alternatives": ["Cable crunch", "Weighted floor crunch"]
-        },
-        {
-          "name": "Hanging leg raises",
-          "sets": 2,
-          "reps": "12",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Captain's chair leg raises", "Toes-to-bar progression"]
-        },
-        {
-          "name": "Ab wheel rollout",
-          "sets": 2,
-          "reps": "10",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Plank", "Cable crunch"]
-        }
+        { "exerciseId": "plank" },
+        { "exerciseId": "cable_crunch" },
+        { "exerciseId": "hanging_leg_raise" },
+        { "exerciseId": "ab_wheel" }
       ]
     },
     {
@@ -366,121 +159,15 @@
       "muscle_groups": [],
       "is_rest_day": false,
       "exercises": [
-        {
-          "name": "Treadmill run",
-          "duration": "20 min",
-          "intensity": "Steady state"
-        },
-        {
-          "name": "Outdoor walk",
-          "duration": "30 min",
-          "intensity": "Brisk pace"
-        },
-        {
-          "name": "Stairmaster",
-          "duration": "25 min",
-          "intensity": "45 steps per minute"
-        },
-        {
-          "name": "Stationary bike",
-          "duration": "25 min",
-          "intensity": "Level 12"
-        }
+        { "exerciseId": "running" },
+        { "exerciseId": "cycling" }
       ]
     },
     {
-      "day": "Stretches",
-      "muscle_groups": ["full body"],
-      "is_rest_day": false,
-      "notes": ["Hold each stretch for 30-60 seconds. No bouncing."],
-      "exercises": [
-        {
-          "name": "Neck side stretch",
-          "sets": 2,
-          "reps": "30 sec each side",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Chin tucks", "Neck circles"]
-        },
-        {
-          "name": "Doorway chest stretch",
-          "sets": 2,
-          "reps": "45 sec each side",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Wall push-up stretch", "Cable chest stretch"]
-        },
-        {
-          "name": "Thread the needle (thoracic rotation)",
-          "sets": 2,
-          "reps": "8 each side",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Cat-cow stretch", "Child's pose"]
-        },
-        {
-          "name": "Lat stretch at rack",
-          "sets": 2,
-          "reps": "45 sec each side",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Kneeling lat stretch", "Side plank lat stretch"]
-        },
-        {
-          "name": "90/90 hip stretch",
-          "sets": 2,
-          "reps": "45 sec each side",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Pigeon pose", "Half-kneeling hip flexor stretch"]
-        },
-        {
-          "name": "Hamstring stretch on box",
-          "sets": 2,
-          "reps": "45 sec each leg",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Standing hamstring stretch", "Supine hamstring stretch"]
-        },
-        {
-          "name": "Figure-4 glute stretch",
-          "sets": 2,
-          "reps": "45 sec each side",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Standing glute stretch", "Cross-body glute stretch"]
-        },
-        {
-          "name": "Quad stretch standing",
-          "sets": 2,
-          "reps": "30 sec each leg",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Half-kneeling quad stretch", "Prone quad stretch"]
-        },
-        {
-          "name": "Calf stretch at wall",
-          "sets": 2,
-          "reps": "30 sec each leg",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Step calf stretch", "Towel calf stretch"]
-        },
-        {
-          "name": "Foam rolling - IT band",
-          "sets": 2,
-          "reps": "60 sec each leg",
-          "load": "Bodyweight",
-          "progress": "same",
-          "alternatives": ["Foam rolling quads", "Foam rolling hamstrings"]
-        }
-      ]
-    }
-  ],
-  "personal_records": [
-    {
-      "exercise": "Bench press",
-      "record": "100 kg x 1"
+      "day": "Rest",
+      "muscle_groups": [],
+      "is_rest_day": true,
+      "exercises": []
     }
   ]
 }

@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
+import com.mateoviscarra.doitall.data.NewWorkoutPlan
 import com.mateoviscarra.doitall.data.WorkoutRepository
 import com.mateoviscarra.doitall.ui.WorkoutApp
 
@@ -20,11 +21,12 @@ class MainActivity : ComponentActivity() {
         window.statusBarColor = android.graphics.Color.parseColor("#EEEEEE")
         
         setContent {
-            val workoutPlan = remember { WorkoutRepository.loadWorkoutPlan(this) }
+            val newPlan = remember { WorkoutRepository.loadWorkoutPlan(this) }
+            val legacyPlan = remember(newPlan) { WorkoutRepository.convertToLegacyFormat(newPlan) }
 
             MaterialTheme {
                 Surface {
-                    WorkoutApp(workoutPlan = workoutPlan)
+                    WorkoutApp(workoutPlan = legacyPlan, newPlan = newPlan)
                 }
             }
         }

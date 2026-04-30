@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mateoviscarra.doitall.calendar.CalendarManager
+import com.mateoviscarra.doitall.data.NewWorkoutPlan
 import com.mateoviscarra.doitall.data.WorkoutPlan
 import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
 import com.mateoviscarra.doitall.data.persist.TimerStateStore
@@ -19,6 +20,8 @@ private const val ROUTE_EDIT = "workout_edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_CALENDAR_SETTINGS = "calendar_settings"
 private const val ROUTE_CUSTOM = "custom_workout"
+private const val ROUTE_CATEGORY_MANAGE = "category_manage"
+private const val ROUTE_DAY_ASSIGN = "day_assign"
 
 fun workoutDetailRoute(index: Int) = "$ROUTE_DETAIL/$index"
 
@@ -26,7 +29,7 @@ private fun workoutEditRoute(dayIndex: Int, slotIndex: Int, pageIndex: Int) =
     "$ROUTE_EDIT/$dayIndex/$slotIndex/$pageIndex"
 
 @Composable
-fun WorkoutApp(workoutPlan: WorkoutPlan) {
+fun WorkoutApp(workoutPlan: WorkoutPlan, newPlan: NewWorkoutPlan? = null) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val store = remember { WorkoutStateStore(context.applicationContext) }
@@ -48,6 +51,12 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
                 },
                 onCustomClick = {
                     navController.navigate(ROUTE_CUSTOM)
+                },
+                onCategoryManageClick = {
+                    navController.navigate(ROUTE_CATEGORY_MANAGE)
+                },
+                onDayAssignClick = {
+                    navController.navigate(ROUTE_DAY_ASSIGN)
                 },
                 timerStore = timerStore,
                 calendarManager = calendarManager
@@ -116,6 +125,28 @@ fun WorkoutApp(workoutPlan: WorkoutPlan) {
                 calendarManager = calendarManager,
                 onBack = { navController.popBackStack() }
             )
+        }
+        composable(ROUTE_CATEGORY_MANAGE) {
+            newPlan?.let { plan ->
+                CategoryManagementScreen(
+                    categories = plan.categories,
+                    onBack = { navController.popBackStack() },
+                    onAddCategory = { name -> /* TODO: implement */ },
+                    onDeleteCategory = { id -> /* TODO: implement */ },
+                    onAddExercise = { categoryId, exercise -> /* TODO: implement */ },
+                    onDeleteExercise = { categoryId, exerciseId -> /* TODO: implement */ }
+                )
+            }
+        }
+        composable(ROUTE_DAY_ASSIGN) {
+            newPlan?.let { plan ->
+                DayAssignmentScreen(
+                    days = plan.days,
+                    allExercises = plan.allExercises(),
+                    onBack = { navController.popBackStack() },
+                    onUpdateDay = { /* TODO: implement */ }
+                )
+            }
         }
     }
 }

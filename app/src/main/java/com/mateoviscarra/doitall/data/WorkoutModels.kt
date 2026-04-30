@@ -1,7 +1,60 @@
 package com.mateoviscarra.doitall.data
 
 /**
- * Canonical exercise (hardcoded). Same [id] is shared across all days — logs apply everywhere.
+ * Exercise defined in a category (default template)
+ */
+data class CategoryExercise(
+    val id: String,
+    val name: String,
+    val defaultSets: Int,
+    val defaultReps: String,
+    val defaultLoad: String,
+    val categories: List<String> = listOf()
+)
+
+/**
+ * Category containing a library of exercises
+ */
+data class Category(
+    val id: String,
+    val name: String,
+    val exercises: List<CategoryExercise>
+)
+
+/**
+ * An exercise assigned to a day with optional alternatives (new format)
+ */
+data class DayExercise(
+    val exerciseId: String,
+    val alternatives: List<String> = emptyList()
+)
+
+/**
+ * A workout day with flexible exercise assignments (new format)
+ */
+data class NewWorkoutDay(
+    val day: String,
+    val muscleGroups: List<String>,
+    val isRestDay: Boolean,
+    val notes: List<String> = emptyList(),
+    val exercises: List<DayExercise>
+)
+
+/**
+ * Complete workout plan with categories and day assignments (new format)
+ */
+data class NewWorkoutPlan(
+    val categories: List<Category>,
+    val days: List<NewWorkoutDay>
+) {
+    fun allExercises(): List<CategoryExercise> = categories.flatMap { it.exercises }
+    fun findExercise(id: String): CategoryExercise? = allExercises().find { it.id == id }
+    fun categoriesForExercise(exerciseId: String): List<Category> = 
+        categories.filter { cat -> cat.exercises.any { it.id == exerciseId } }
+}
+
+/**
+ * Canonical exercise (derived from category exercise for logging)
  */
 data class ExerciseDefinition(
     val id: String,
@@ -24,19 +77,27 @@ data class WorkoutSlot(
     }
 
     val mainExerciseId: String get() = exerciseIds.first()
-
-    /** Ids the user may bind to any page in this slot (from hardcoded plan). */
     fun optionIds(): List<String> = exerciseIds
 }
 
-data class WorkoutPlan(
-    /** All exercises keyed by stable id (built when parsing JSON). */
+/**
+ * Workout day (legacy format for UI compatibility)
+ */
+data class LegacyWorkoutDay(
+    val day: String,
+    val muscleGroups: List<String>,
+    val isRestDay: Boolean,
+    val notes: List<String> = emptyList(),
+    val slots: List<WorkoutSlot>
+)
+
+/**
+ * Workout plan (legacy format for UI compatibility)
+ */
+data class LegacyWorkoutPlan(
     val catalog: Map<String, ExerciseDefinition>,
-    val schedule: List<WorkoutDay>
+    val schedule: List<LegacyWorkoutDay>
 ) {
-    /**
-     * Where each exercise id appears in the plan (day name + 1-based slot index for display).
-     */
     fun exerciseLocationsById(): Map<String, List<ExerciseLocation>> {
         val acc = mutableMapOf<String, MutableList<ExerciseLocation>>()
         for (day in schedule) {
@@ -56,10 +117,6 @@ data class ExerciseLocation(
     val slotIndex: Int
 )
 
-data class WorkoutDay(
-    val day: String,
-    val muscleGroups: List<String>,
-    val isRestDay: Boolean,
-    val notes: List<String> = emptyList(),
-    val slots: List<WorkoutSlot>
-)
+// Type aliases for backward compatibility with existing UI code
+typealias WorkoutDay = LegacyWorkoutDay
+typealias WorkoutPlan = LegacyWorkoutPlan

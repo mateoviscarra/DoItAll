@@ -7,80 +7,99 @@ import java.util.Locale
 
 object WorkoutRepository {
 
-    fun loadWorkoutPlan(context: Context): WorkoutPlan {
+    fun loadWorkoutPlan(context: Context): NewWorkoutPlan {
         val jsonText = context.assets.open("workout_plan.json")
             .bufferedReader()
             .use { it.readText() }
 
         val root = JSONObject(jsonText)
-        val scheduleArray = root.optJSONArray("schedule") ?: JSONArray()
-
-        val nameToId = linkedMapOf<String, String>()
-        val catalog = linkedMapOf<String, ExerciseDefinition>()
-        val usedIds = mutableSetOf<String>()
-
-        fun registerExercise(rawName: String, jsonTemplate: JSONObject?, forceUnique: Boolean = false): String {
-            val key = rawName.trim().lowercase(Locale.US)
-            val displayName = rawName.trim()
-
-            if (!forceUnique) {
-                val existing = nameToId[key]
-                if (existing != null) return existing
-            }
-
-            val newId = buildStableExerciseId(displayName, usedIds)
-            usedIds.add(newId)
-            nameToId[key] = newId
-            catalog[newId] = if (jsonTemplate != null) {
-                exerciseDefinitionFromWorkoutJson(newId, displayName, jsonTemplate)
-            } else {
-                placeholderExerciseDefinition(newId, displayName)
-            }
-            return newId
-        }
-
-        fun parseSlot(exerciseObj: JSONObject): WorkoutSlot {
-            val mainName = exerciseObj.optString("name", "Unknown")
-            val mainId = registerExercise(mainName, exerciseObj)
-            val altNames = jsonStringArray(exerciseObj.optJSONArray("alternatives"))
-            val altIds = altNames.map { registerExercise(it, null, forceUnique = true) }
-            return WorkoutSlot(exerciseIds = listOf(mainId) + altIds)
-        }
-
-        val schedule = buildList {
-            for (i in 0 until scheduleArray.length()) {
-                val dayObj = scheduleArray.optJSONObject(i) ?: continue
-                val day = dayObj.optString("day", "Unknown Day")
-                val isRestDay = dayObj.optBoolean("is_rest_day", false)
-                val muscleGroups = jsonStringArray(dayObj.optJSONArray("muscle_groups"))
-                val notes = jsonStringArray(dayObj.optJSONArray("notes"))
-
-                val exercisesArray = dayObj.optJSONArray("exercises") ?: JSONArray()
-                val slots = buildList {
-                    for (j in 0 until exercisesArray.length()) {
-                        val exerciseObj = exercisesArray.optJSONObject(j) ?: continue
-                        add(parseSlot(exerciseObj))
-                    }
-                }
-
-                add(
-                    WorkoutDay(
-                        day = day,
-                        muscleGroups = muscleGroups,
-                        isRestDay = isRestDay,
-                        notes = notes,
-                        slots = slots
-                    )
-                )
+        
+        // Parse categories
+        val categoriesArray = root.optJSONArray("categories") ?: JSONArray()
+        val categories = buildList {
+            for (i in 0 until categoriesArray.length()) {
+                val catObj = categoriesArray.optJSONObject(i) ?: continue
+                val category = parseCategory(catObj)
+                add(category)
             }
         }
-
-        return WorkoutPlan(
-            catalog = catalog.toMap(),
-            schedule = schedule
+        
+        // Parse days
+        val daysArray = root.optJSONArray("days") ?: JSONArray()
+        val days = buildList {
+            for (i in 0 until daysArray.length()) {
+                val dayObj = daysArray.optJSONObject(i) ?: continue
+                val day = parseNewDay(dayObj)
+                add(day)
+            }
+        }
+        
+        return NewWorkoutPlan(categories = categories, days = days)
+    }
+    
+    private fun parseCategory(obj: JSONObject): Category {
+        val id = obj.optString("id", "")
+        val name = obj.optString("name", "Unknown")
+        val exercisesArray = obj.optJSONArray("exercises") ?: JSONArray()
+        
+        val exercises = buildList {
+            for (i in 0 until exercisesArray.length()) {
+                val exObj = exercisesArray.optJSONObject(i) ?: continue
+                val exercise = parseCategoryExercise(exObj, id)
+                add(exercise)
+            }
+        }
+        
+        return Category(id = id, name = name, exercises = exercises)
+    }
+    
+    private fun parseCategoryExercise(obj: JSONObject, categoryId: String): CategoryExercise {
+        return CategoryExercise(
+            id = obj.optString("id", ""),
+            name = obj.optString("name", "Unknown"),
+            defaultSets = obj.optInt("defaultSets", 3),
+            defaultReps = obj.optString("defaultReps", "10"),
+            defaultLoad = obj.optString("defaultLoad", ""),
+            categories = listOf(categoryId)
         )
     }
-
+    
+    private fun parseNewDay(obj: JSONObject): NewWorkoutDay {
+        val day = obj.optString("day", "Unknown Day")
+        val isRestDay = obj.optBoolean("is_rest_day", false)
+        val muscleGroups = jsonStringArray(obj.optJSONArray("muscle_groups"))
+        val notes = jsonStringArray(obj.optJSONArray("notes"))
+        
+        val exercisesArray = obj.optJSONArray("exercises") ?: JSONArray()
+        val exercises = buildList {
+            for (i in 0 until exercisesArray.length()) {
+                val exObj = exercisesArray.optJSONObject(i) ?: continue
+                val dayExercise = parseDayExercise(exObj)
+                add(dayExercise)
+            }
+        }
+        
+        return NewWorkoutDay(
+            day = day,
+            muscleGroups = muscleGroups,
+            isRestDay = isRestDay,
+            notes = notes,
+            exercises = exercises
+        )
+    }
+    
+    private fun parseDayExercise(obj: JSONObject): DayExercise {
+        val exerciseId = obj.optString("exerciseId", "")
+        val alternativesArray = obj.optJSONArray("alternatives")
+        val alternatives = if (alternativesArray != null) {
+            jsonStringArray(alternativesArray)
+        } else {
+            emptyList()
+        }
+        
+        return DayExercise(exerciseId = exerciseId, alternatives = alternatives)
+    }
+    
     private fun jsonStringArray(array: JSONArray?): List<String> {
         if (array == null) return emptyList()
         return buildList {
@@ -89,20 +108,34 @@ object WorkoutRepository {
             }
         }
     }
-}
-
-private fun buildStableExerciseId(displayName: String, taken: MutableSet<String>): String {
-    val base = displayName.lowercase(Locale.US)
-        .replace(Regex("[^a-z0-9]+"), "_")
-        .trim('_')
-        .ifEmpty { "exercise" }
-    if (base !in taken) return base
-    val suffix = displayName.hashCode().toUInt().toString(16)
-    var candidate = "${base}_$suffix"
-    var n = 1
-    while (candidate in taken) {
-        candidate = "${base}_${suffix}_$n"
-        n++
+    
+    // Convert new format to legacy format for UI compatibility
+    fun convertToLegacyFormat(plan: NewWorkoutPlan): LegacyWorkoutPlan {
+        val days = plan.days.map { day ->
+            val slots = day.exercises.map { dayEx ->
+                val allIds = listOf(dayEx.exerciseId) + dayEx.alternatives
+                WorkoutSlot(exerciseIds = allIds)
+            }
+            LegacyWorkoutDay(
+                day = day.day,
+                muscleGroups = day.muscleGroups,
+                isRestDay = day.isRestDay,
+                notes = day.notes,
+                slots = slots
+            )
+        }
+        
+        val catalog = linkedMapOf<String, ExerciseDefinition>()
+        for (exercise in plan.allExercises()) {
+            catalog[exercise.id] = ExerciseDefinition(
+                id = exercise.id,
+                name = exercise.name,
+                sets = exercise.defaultSets.toString(),
+                reps = exercise.defaultReps,
+                load = exercise.defaultLoad
+            )
+        }
+        
+        return LegacyWorkoutPlan(catalog = catalog, schedule = days)
     }
-    return candidate
 }
