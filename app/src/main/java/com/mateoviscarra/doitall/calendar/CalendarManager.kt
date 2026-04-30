@@ -264,7 +264,7 @@ class CalendarManager(private val context: Context) {
             invalidateServiceCache()
             val service = getCalendarService() ?: return@withContext Result.failure(Exception("Not signed in"))
 
-            val startDateTime = LocalDateTime.of(date.year, date.month, date.dayOfMonth, startHour, startMinute)
+            val startDateTime = LocalDateTime.of(date.year, date.monthValue, date.dayOfMonth, startHour, startMinute)
             val endDateTime = startDateTime.plusMinutes(durationMinutes.toLong())
 
             val zoneId = ZoneId.systemDefault()
