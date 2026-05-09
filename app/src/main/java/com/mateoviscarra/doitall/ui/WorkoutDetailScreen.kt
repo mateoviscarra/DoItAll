@@ -252,7 +252,8 @@ fun WorkoutDetailScreen(
                     val title = dayKey
 
                     val description = buildString {
-                        val doneExerciseIds = resolved.dayLog.doneExercises
+                        val dayExerciseIds = workoutDay.slots.flatMap { it.exerciseIds }.toSet()
+                        val doneExerciseIds = resolved.dayLog.doneExercises.filter { it in dayExerciseIds }
                         if (doneExerciseIds.isEmpty()) {
                             append("No exercises logged")
                         } else {

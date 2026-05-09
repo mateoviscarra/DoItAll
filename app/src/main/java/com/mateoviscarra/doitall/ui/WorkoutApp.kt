@@ -115,32 +115,12 @@ fun WorkoutApp(
         ) { entry ->
             val index = entry.arguments?.getInt("index") ?: return@composable
             
-            // Use mutable plan for day data
-            val legacySchedule = workoutPlan.schedule.map { legacyDay ->
-                val newDay = mutablePlan.days.find { it.day == legacyDay.day }
-                if (newDay != null) {
-                    com.mateoviscarra.doitall.data.LegacyWorkoutDay(
-                        day = newDay.day,
-                        muscleGroups = newDay.muscleGroups,
-                        isRestDay = newDay.isRestDay,
-                        notes = newDay.notes,
-                        slots = newDay.exercises.map { ex ->
-                            com.mateoviscarra.doitall.data.WorkoutSlot(
-                                exerciseIds = listOf(ex.exerciseId) + ex.alternatives
-                            )
-                        }
-                    )
-                } else legacyDay
-            }
+            // Rebuild legacy plan from mutablePlan to ensure exercise IDs match catalog
+            val rebuiltPlan = com.mateoviscarra.doitall.data.WorkoutRepository.convertToLegacyFormat(mutablePlan)
             
-            val legacyPlan = com.mateoviscarra.doitall.data.WorkoutPlan(
-                catalog = workoutPlan.catalog,
-                schedule = legacySchedule
-            )
-            
-            val day = legacyPlan.schedule.getOrNull(index) ?: return@composable
+            val day = rebuiltPlan.schedule.getOrNull(index) ?: return@composable
             WorkoutDetailScreen(
-                workoutPlan = legacyPlan,
+                workoutPlan = rebuiltPlan,
                 dayKey = day.day,
                 workoutDay = day,
                 onBack = { navController.popBackStack() },
@@ -259,6 +239,9 @@ fun WorkoutApp(
                             } else {
                                 cat
                             }
+                        },
+                        days = mutablePlan.days.map { day ->
+                            day.copy(exercises = day.exercises.filter { it.exerciseId != exerciseId })
                         }
                     )
                     onSavePlan?.invoke(mutablePlan)

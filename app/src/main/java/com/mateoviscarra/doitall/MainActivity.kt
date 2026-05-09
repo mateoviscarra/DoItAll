@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
                 // Load directly from SharedPreferences
                 try {
                     val persisted = newWorkoutStore.loadPlanOnce()
-                    android.util.Log.d("DoItAll", "Loaded persisted: ${persisted?.categories?.sumOf { it.exercises.size }} exercises")
                     if (persisted != null) {
                         plan = persisted
                         android.util.Log.d("DoItAll", "Plan updated from persistence")
