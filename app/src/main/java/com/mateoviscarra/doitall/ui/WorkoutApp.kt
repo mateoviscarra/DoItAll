@@ -1,7 +1,11 @@
 package com.mateoviscarra.doitall.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,10 +13,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mateoviscarra.doitall.calendar.CalendarManager
+import com.mateoviscarra.doitall.data.Category
+import com.mateoviscarra.doitall.data.CategoryExercise
+import com.mateoviscarra.doitall.data.NewWorkoutDay
 import com.mateoviscarra.doitall.data.NewWorkoutPlan
 import com.mateoviscarra.doitall.data.WorkoutPlan
+import com.mateoviscarra.doitall.data.persist.NewWorkoutStore
 import com.mateoviscarra.doitall.data.persist.WorkoutStateStore
 import com.mateoviscarra.doitall.data.persist.TimerStateStore
+import kotlinx.coroutines.flow.collectLatest
 
 private const val ROUTE_LIST = "workout_list"
 private const val ROUTE_DETAIL = "workout_detail"
@@ -29,20 +38,56 @@ private fun workoutEditRoute(dayIndex: Int, slotIndex: Int, pageIndex: Int) =
     "$ROUTE_EDIT/$dayIndex/$slotIndex/$pageIndex"
 
 @Composable
-fun WorkoutApp(workoutPlan: WorkoutPlan, newPlan: NewWorkoutPlan? = null) {
+fun WorkoutApp(
+    workoutPlan: WorkoutPlan, 
+    newPlan: NewWorkoutPlan,
+    newWorkoutStore: NewWorkoutStore? = null,
+    onSavePlan: ((NewWorkoutPlan) -> Unit)? = null
+) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val store = remember { WorkoutStateStore(context.applicationContext) }
     val calendarManager = remember { CalendarManager(context.applicationContext) }
     val timerStore = remember { TimerStateStore(context.applicationContext) }
+    
+    // Local state for the mutable workout plan
+    var mutablePlan by remember { mutableStateOf(newPlan) }
+    var isLoaded by remember { mutableStateOf(false) }
+    
+    // Load persisted data if store exists
+    LaunchedEffect(newWorkoutStore) {
+        newWorkoutStore?.planFlow?.collectLatest { persistedPlan ->
+            if (persistedPlan != null && !isLoaded) {
+                mutablePlan = persistedPlan
+                isLoaded = true
+            }
+        }
+    }
 
     NavHost(
         navController = navController,
         startDestination = ROUTE_LIST
     ) {
         composable(ROUTE_LIST) {
+            val convertedSchedule = workoutPlan.schedule.map { legacyDay ->
+                val newDay = mutablePlan.days.find { it.day == legacyDay.day }
+                if (newDay != null) {
+                    com.mateoviscarra.doitall.data.LegacyWorkoutDay(
+                        day = newDay.day,
+                        muscleGroups = newDay.muscleGroups,
+                        isRestDay = newDay.isRestDay,
+                        notes = newDay.notes,
+                        slots = newDay.exercises.map { ex ->
+                            com.mateoviscarra.doitall.data.WorkoutSlot(
+                                exerciseIds = listOf(ex.exerciseId) + ex.alternatives
+                            )
+                        }
+                    )
+                } else legacyDay
+            }
+            
             WorkoutListScreen(
-                workoutDays = workoutPlan.schedule,
+                workoutDays = convertedSchedule,
                 onDaySelected = { index ->
                     navController.navigate(workoutDetailRoute(index))
                 },
@@ -69,9 +114,33 @@ fun WorkoutApp(workoutPlan: WorkoutPlan, newPlan: NewWorkoutPlan? = null) {
             )
         ) { entry ->
             val index = entry.arguments?.getInt("index") ?: return@composable
-            val day = workoutPlan.schedule.getOrNull(index) ?: return@composable
+            
+            // Use mutable plan for day data
+            val legacySchedule = workoutPlan.schedule.map { legacyDay ->
+                val newDay = mutablePlan.days.find { it.day == legacyDay.day }
+                if (newDay != null) {
+                    com.mateoviscarra.doitall.data.LegacyWorkoutDay(
+                        day = newDay.day,
+                        muscleGroups = newDay.muscleGroups,
+                        isRestDay = newDay.isRestDay,
+                        notes = newDay.notes,
+                        slots = newDay.exercises.map { ex ->
+                            com.mateoviscarra.doitall.data.WorkoutSlot(
+                                exerciseIds = listOf(ex.exerciseId) + ex.alternatives
+                            )
+                        }
+                    )
+                } else legacyDay
+            }
+            
+            val legacyPlan = com.mateoviscarra.doitall.data.WorkoutPlan(
+                catalog = workoutPlan.catalog,
+                schedule = legacySchedule
+            )
+            
+            val day = legacyPlan.schedule.getOrNull(index) ?: return@composable
             WorkoutDetailScreen(
-                workoutPlan = workoutPlan,
+                workoutPlan = legacyPlan,
                 dayKey = day.day,
                 workoutDay = day,
                 onBack = { navController.popBackStack() },
@@ -92,9 +161,32 @@ fun WorkoutApp(workoutPlan: WorkoutPlan, newPlan: NewWorkoutPlan? = null) {
             val dayIndex = entry.arguments?.getInt("dayIndex") ?: return@composable
             val slotIndex = entry.arguments?.getInt("slotIndex") ?: return@composable
             val pageIndex = entry.arguments?.getInt("pageIndex") ?: return@composable
-            val day = workoutPlan.schedule.getOrNull(dayIndex) ?: return@composable
+            
+            val legacySchedule = workoutPlan.schedule.map { legacyDay ->
+                val newDay = mutablePlan.days.find { it.day == legacyDay.day }
+                if (newDay != null) {
+                    com.mateoviscarra.doitall.data.LegacyWorkoutDay(
+                        day = newDay.day,
+                        muscleGroups = newDay.muscleGroups,
+                        isRestDay = newDay.isRestDay,
+                        notes = newDay.notes,
+                        slots = newDay.exercises.map { ex ->
+                            com.mateoviscarra.doitall.data.WorkoutSlot(
+                                exerciseIds = listOf(ex.exerciseId) + ex.alternatives
+                            )
+                        }
+                    )
+                } else legacyDay
+            }
+            
+            val legacyPlan = com.mateoviscarra.doitall.data.WorkoutPlan(
+                catalog = workoutPlan.catalog,
+                schedule = legacySchedule
+            )
+            
+            val day = legacyPlan.schedule.getOrNull(dayIndex) ?: return@composable
             EditVariationScreen(
-                workoutPlan = workoutPlan,
+                workoutPlan = legacyPlan,
                 dayKey = day.day,
                 workoutDay = day,
                 slotIndex = slotIndex,
@@ -127,26 +219,66 @@ fun WorkoutApp(workoutPlan: WorkoutPlan, newPlan: NewWorkoutPlan? = null) {
             )
         }
         composable(ROUTE_CATEGORY_MANAGE) {
-            newPlan?.let { plan ->
-                CategoryManagementScreen(
-                    categories = plan.categories,
-                    onBack = { navController.popBackStack() },
-                    onAddCategory = { name -> /* TODO: implement */ },
-                    onDeleteCategory = { id -> /* TODO: implement */ },
-                    onAddExercise = { categoryId, exercise -> /* TODO: implement */ },
-                    onDeleteExercise = { categoryId, exerciseId -> /* TODO: implement */ }
-                )
-            }
+            CategoryManagementScreen(
+                categories = mutablePlan.categories,
+                onBack = { navController.popBackStack() },
+                onAddCategory = { name ->
+                    val newCategory = Category(
+                        id = name.lowercase().replace(" ", "_"),
+                        name = name,
+                        exercises = emptyList()
+                    )
+                    mutablePlan = mutablePlan.copy(
+                        categories = mutablePlan.categories + newCategory
+                    )
+                    onSavePlan?.invoke(mutablePlan)
+                },
+                onDeleteCategory = { id ->
+                    mutablePlan = mutablePlan.copy(
+                        categories = mutablePlan.categories.filter { it.id != id }
+                    )
+                    onSavePlan?.invoke(mutablePlan)
+                },
+                onAddExercise = { categoryId, exercise ->
+                    mutablePlan = mutablePlan.copy(
+                        categories = mutablePlan.categories.map { cat ->
+                            if (cat.id == categoryId) {
+                                cat.copy(exercises = cat.exercises + exercise)
+                            } else {
+                                cat
+                            }
+                        }
+                    )
+                    onSavePlan?.invoke(mutablePlan)
+                },
+                onDeleteExercise = { categoryId, exerciseId ->
+                    mutablePlan = mutablePlan.copy(
+                        categories = mutablePlan.categories.map { cat ->
+                            if (cat.id == categoryId) {
+                                cat.copy(exercises = cat.exercises.filter { it.id != exerciseId })
+                            } else {
+                                cat
+                            }
+                        }
+                    )
+                    onSavePlan?.invoke(mutablePlan)
+                }
+            )
         }
         composable(ROUTE_DAY_ASSIGN) {
-            newPlan?.let { plan ->
-                DayAssignmentScreen(
-                    days = plan.days,
-                    allExercises = plan.allExercises(),
-                    onBack = { navController.popBackStack() },
-                    onUpdateDay = { /* TODO: implement */ }
-                )
-            }
+            DayAssignmentScreen(
+                days = mutablePlan.days,
+                allExercises = mutablePlan.allExercises(),
+                onBack = { navController.popBackStack() },
+                onUpdateDay = { updatedDay ->
+                    mutablePlan = mutablePlan.copy(
+                        days = mutablePlan.days.map { day ->
+                            if (day.day == updatedDay.day) updatedDay else day
+                        }
+                    )
+                    onSavePlan?.invoke(mutablePlan)
+                }
+            )
         }
     }
 }
