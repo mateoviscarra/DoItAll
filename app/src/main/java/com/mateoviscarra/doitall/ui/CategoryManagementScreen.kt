@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,10 +24,12 @@ fun CategoryManagementScreen(
     onAddCategory: (String) -> Unit,
     onDeleteCategory: (String) -> Unit,
     onAddExercise: (categoryId: String, CategoryExercise) -> Unit,
-    onDeleteExercise: (categoryId: String, exerciseId: String) -> Unit
+    onDeleteExercise: (categoryId: String, exerciseId: String) -> Unit,
+    onEditExercise: (categoryId: String, CategoryExercise) -> Unit
 ) {
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
+    var editingExercise by remember { mutableStateOf<Pair<String, CategoryExercise>?>(null) }
     
     Scaffold(
         topBar = {
@@ -52,7 +53,7 @@ fun CategoryManagementScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             categories.forEach { category ->
                 item {
@@ -60,7 +61,8 @@ fun CategoryManagementScreen(
                         category = category,
                         onDeleteCategory = { onDeleteCategory(category.id) },
                         onAddExercise = { exercise -> onAddExercise(category.id, exercise) },
-                        onDeleteExercise = { exerciseId -> onDeleteExercise(category.id, exerciseId) }
+                        onDeleteExercise = { exerciseId -> onDeleteExercise(category.id, exerciseId) },
+                        onEditExercise = { exercise -> editingExercise = category.id to exercise }
                     )
                 }
             }
@@ -99,6 +101,17 @@ fun CategoryManagementScreen(
             }
         )
     }
+    
+    editingExercise?.let { (categoryId, exercise) ->
+        EditExerciseDialog(
+            exercise = exercise,
+            onDismiss = { editingExercise = null },
+            onSave = { updatedExercise ->
+                onEditExercise(categoryId, updatedExercise)
+                editingExercise = null
+            }
+        )
+    }
 }
 
 @Composable
@@ -106,7 +119,8 @@ private fun CategoryCard(
     category: Category,
     onDeleteCategory: () -> Unit,
     onAddExercise: (CategoryExercise) -> Unit,
-    onDeleteExercise: (String) -> Unit
+    onDeleteExercise: (String) -> Unit,
+    onEditExercise: (CategoryExercise) -> Unit
 ) {
     var expanded by remember { mutableStateOf(true) }
     var showAddExerciseDialog by remember { mutableStateOf(false) }
@@ -136,27 +150,32 @@ private fun CategoryCard(
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 
                 category.exercises.forEach { exercise ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        onClick = { onEditExercise(exercise) },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(text = exercise.name, style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                text = "${exercise.defaultSets} sets × ${exercise.defaultReps} reps${if (exercise.defaultLoad.isNotBlank()) " @ ${exercise.defaultLoad}" else ""}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        IconButton(onClick = { onDeleteExercise(exercise.id) }) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = MaterialTheme.colorScheme.error
-                            )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = exercise.name, style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    text = "${exercise.defaultSets} sets × ${exercise.defaultReps} reps${if (exercise.defaultLoad.isNotBlank()) " @ ${exercise.defaultLoad}" else ""}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            IconButton(onClick = { onDeleteExercise(exercise.id) }) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
                     }
                 }
@@ -246,6 +265,78 @@ private fun AddExerciseDialog(
                 }
             ) {
                 Text("Add")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun EditExerciseDialog(
+    exercise: CategoryExercise,
+    onDismiss: () -> Unit,
+    onSave: (CategoryExercise) -> Unit
+) {
+    var name by remember { mutableStateOf(exercise.name) }
+    var defaultSets by remember { mutableStateOf(exercise.defaultSets.toString()) }
+    var defaultReps by remember { mutableStateOf(exercise.defaultReps) }
+    var defaultLoad by remember { mutableStateOf(exercise.defaultLoad) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Exercise") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Exercise Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = defaultSets,
+                    onValueChange = { defaultSets = it.filter { c -> c.isDigit() } },
+                    label = { Text("Default Sets") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = defaultReps,
+                    onValueChange = { defaultReps = it },
+                    label = { Text("Default Reps") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = defaultLoad,
+                    onValueChange = { defaultLoad = it },
+                    label = { Text("Default Load (e.g., Bodyweight, 20 kg)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (name.isNotBlank()) {
+                        onSave(
+                            exercise.copy(
+                                name = name,
+                                defaultSets = defaultSets.toIntOrNull() ?: 3,
+                                defaultReps = defaultReps,
+                                defaultLoad = defaultLoad
+                            )
+                        )
+                    }
+                }
+            ) {
+                Text("Save")
             }
         },
         dismissButton = {

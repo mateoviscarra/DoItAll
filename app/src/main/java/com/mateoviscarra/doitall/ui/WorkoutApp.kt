@@ -245,6 +245,20 @@ fun WorkoutApp(
                         }
                     )
                     onSavePlan?.invoke(mutablePlan)
+                },
+                onEditExercise = { categoryId, updatedExercise ->
+                    mutablePlan = mutablePlan.copy(
+                        categories = mutablePlan.categories.map { cat ->
+                            if (cat.id == categoryId) {
+                                cat.copy(exercises = cat.exercises.map { ex ->
+                                    if (ex.id == updatedExercise.id) updatedExercise else ex
+                                })
+                            } else {
+                                cat
+                            }
+                        }
+                    )
+                    onSavePlan?.invoke(mutablePlan)
                 }
             )
         }
