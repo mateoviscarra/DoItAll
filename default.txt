@@ -1,0 +1,746 @@
+{
+    "Push A": {
+      "main": [
+        {
+          "exercise": "Barbell Bench Press",
+          "sets": 3,
+          "reps": "6-8",
+          "weight_kg": 90,
+          "alternatives": [
+            {
+              "exercise": "Dumbbell Bench Press",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 40
+            },
+            {
+              "exercise": "Machine Chest Press",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 85
+            }
+          ]
+        },
+        {
+          "exercise": "Incline Dumbbell Press",
+          "sets": 3,
+          "reps": "8-10",
+          "weight_kg": 34,
+          "alternatives": [
+            {
+              "exercise": "Incline Barbell Press",
+              "sets": 3,
+              "reps": "6-8",
+              "weight_kg": 75
+            },
+            {
+              "exercise": "Incline Smith Machine Press",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 80
+            }
+          ]
+        },
+        {
+          "exercise": "Weighted Dips",
+          "sets": 2,
+          "reps": "8-10",
+          "weight_kg": 20,
+          "alternatives": [
+            {
+              "exercise": "Assisted Dips",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": -25
+            },
+            {
+              "exercise": "Decline Push-Ups",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 0
+            }
+          ]
+        },
+        {
+          "exercise": "Seated Dumbbell Lateral Raise",
+          "sets": 3,
+          "reps": "12-15",
+          "weight_kg": 12,
+          "alternatives": [
+            {
+              "exercise": "Cable Lateral Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 10
+            },
+            {
+              "exercise": "Machine Lateral Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 45
+            }
+          ]
+        },
+        {
+          "exercise": "Overhead Cable Tricep Extension",
+          "sets": 3,
+          "reps": "10-12",
+          "weight_kg": 32,
+          "alternatives": [
+            {
+              "exercise": "Overhead Dumbbell Tricep Extension",
+              "sets": 3,
+              "reps": "10-12",
+              "weight_kg": 28
+            },
+            {
+              "exercise": "EZ-Bar Skull Crushers",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 40
+            }
+          ]
+        },
+        {
+          "exercise": "Cable Tricep Pushdown",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 40,
+          "alternatives": [
+            {
+              "exercise": "Straight-Bar Pushdown",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 42
+            },
+            {
+              "exercise": "Close-Grip Push-Ups",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 0
+            }
+          ]
+        }
+      ]
+    },
+    "Pull A": {
+      "main": [
+        {
+          "exercise": "Pull-Ups",
+          "sets": 3,
+          "reps": "8-10",
+          "weight_kg": 10,
+          "alternatives": [
+            {
+              "exercise": "Lat Pulldowns",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 75
+            },
+            {
+              "exercise": "Assisted Pull-Ups",
+              "sets": 3,
+              "reps": "10-12",
+              "weight_kg": -25
+            }
+          ]
+        },
+        {
+          "exercise": "Chest-Supported T-Bar Row",
+          "sets": 3,
+          "reps": "8-10",
+          "weight_kg": 70,
+          "alternatives": [
+            {
+              "exercise": "Chest-Supported Dumbbell Row",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 36
+            },
+            {
+              "exercise": "Machine Row",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 75
+            }
+          ]
+        },
+        {
+          "exercise": "Seated Cable Row",
+          "sets": 2,
+          "reps": "8-10",
+          "weight_kg": 75,
+          "alternatives": [
+            {
+              "exercise": "One-Arm Dumbbell Row",
+              "sets": 2,
+              "reps": "8-10",
+              "weight_kg": 42
+            },
+            {
+              "exercise": "Barbell Row",
+              "sets": 2,
+              "reps": "6-8",
+              "weight_kg": 85
+            }
+          ]
+        },
+        {
+          "exercise": "Face Pulls",
+          "sets": 3,
+          "reps": "12-15",
+          "weight_kg": 32,
+          "alternatives": [
+            {
+              "exercise": "Reverse Pec Deck",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 55
+            },
+            {
+              "exercise": "Rear Delt Cable Flyes",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 12
+            }
+          ]
+        },
+        {
+          "exercise": "Barbell Curl",
+          "sets": 2,
+          "reps": "8-10",
+          "weight_kg": 40,
+          "alternatives": [
+            {
+              "exercise": "EZ-Bar Curl",
+              "sets": 2,
+              "reps": "8-10",
+              "weight_kg": 35
+            },
+            {
+              "exercise": "Machine Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 40
+            }
+          ]
+        },
+        {
+          "exercise": "Hammer Curl",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 20,
+          "alternatives": [
+            {
+              "exercise": "Rope Hammer Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 32
+            },
+            {
+              "exercise": "Cross-Body Hammer Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 22
+            }
+          ]
+        }
+      ]
+    },
+    "Legs A": {
+      "main": [
+        {
+          "exercise": "Barbell Squat",
+          "sets": 3,
+          "reps": "6-8",
+          "weight_kg": 120,
+          "alternatives": [
+            {
+              "exercise": "Smith Machine Squat",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 110
+            },
+            {
+              "exercise": "Hack Squat",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 140
+            }
+          ]
+        },
+        {
+          "exercise": "Leg Press",
+          "sets": 3,
+          "reps": "10-12",
+          "weight_kg": 240,
+          "alternatives": [
+            {
+              "exercise": "Hack Squat",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 140
+            },
+            {
+              "exercise": "Goblet Squat",
+              "sets": 3,
+              "reps": "10-12",
+              "weight_kg": 40
+            }
+          ]
+        },
+        {
+          "exercise": "Bulgarian Split Squat",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 28,
+          "alternatives": [
+            {
+              "exercise": "Walking Lunges",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 24
+            },
+            {
+              "exercise": "Step-Ups",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 24
+            }
+          ]
+        },
+        {
+          "exercise": "Leg Extension",
+          "sets": 2,
+          "reps": "12-15",
+          "weight_kg": 75,
+          "alternatives": [
+            {
+              "exercise": "Sissy Squat",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 0
+            },
+            {
+              "exercise": "Spanish Squat",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 20
+            }
+          ]
+        },
+        {
+          "exercise": "Lying Leg Curl",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 55,
+          "alternatives": [
+            {
+              "exercise": "Seated Leg Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 60
+            },
+            {
+              "exercise": "Nordic Curl",
+              "sets": 2,
+              "reps": "6-8",
+              "weight_kg": 0
+            }
+          ]
+        },
+        {
+          "exercise": "Standing Calf Raise",
+          "sets": 3,
+          "reps": "12-15",
+          "weight_kg": 90,
+          "alternatives": [
+            {
+              "exercise": "Seated Calf Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 60
+            },
+            {
+              "exercise": "Leg Press Calf Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 180
+            }
+          ]
+        }
+      ]
+    },
+    "Push B": {
+      "main": [
+        {
+          "exercise": "Incline Dumbbell Press",
+          "sets": 3,
+          "reps": "8-10",
+          "weight_kg": 34,
+          "alternatives": [
+            {
+              "exercise": "Incline Barbell Press",
+              "sets": 3,
+              "reps": "6-8",
+              "weight_kg": 75
+            },
+            {
+              "exercise": "Incline Smith Machine Press",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 80
+            }
+          ]
+        },
+        {
+          "exercise": "Seated Dumbbell Shoulder Press",
+          "sets": 3,
+          "reps": "8-10",
+          "weight_kg": 30,
+          "alternatives": [
+            {
+              "exercise": "Machine Shoulder Press",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 70
+            },
+            {
+              "exercise": "Smith Machine Shoulder Press",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 75
+            }
+          ]
+        },
+        {
+          "exercise": "Cable Flyes",
+          "sets": 2,
+          "reps": "12-15",
+          "weight_kg": 18,
+          "alternatives": [
+            {
+              "exercise": "Pec Deck",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 65
+            },
+            {
+              "exercise": "Dumbbell Flyes",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 18
+            }
+          ]
+        },
+        {
+          "exercise": "Seated Dumbbell Lateral Raise",
+          "sets": 3,
+          "reps": "12-15",
+          "weight_kg": 12,
+          "alternatives": [
+            {
+              "exercise": "Cable Lateral Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 10
+            },
+            {
+              "exercise": "Machine Lateral Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 45
+            }
+          ]
+        },
+        {
+          "exercise": "Cable Tricep Pushdown",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 40,
+          "alternatives": [
+            {
+              "exercise": "Rope Pushdown",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 38
+            },
+            {
+              "exercise": "Straight-Bar Pushdown",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 42
+            }
+          ]
+        },
+        {
+          "exercise": "Dips",
+          "sets": 2,
+          "reps": "8-10",
+          "weight_kg": 15,
+          "alternatives": [
+            {
+              "exercise": "Assisted Dips",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": -20
+            },
+            {
+              "exercise": "Close-Grip Bench Press",
+              "sets": 2,
+              "reps": "8-10",
+              "weight_kg": 75
+            }
+          ]
+        }
+      ]
+    },
+    "Pull B": {
+      "main": [
+        {
+          "exercise": "Romanian Deadlift",
+          "sets": 3,
+          "reps": "6-8",
+          "weight_kg": 130,
+          "alternatives": [
+            {
+              "exercise": "Stiff-Leg Deadlift",
+              "sets": 3,
+              "reps": "6-8",
+              "weight_kg": 120
+            },
+            {
+              "exercise": "Smith Machine Romanian Deadlift",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 120
+            }
+          ]
+        },
+        {
+          "exercise": "Pull-Ups",
+          "sets": 3,
+          "reps": "8-10",
+          "weight_kg": 10,
+          "alternatives": [
+            {
+              "exercise": "Lat Pulldowns",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 75
+            },
+            {
+              "exercise": "Assisted Pull-Ups",
+              "sets": 3,
+              "reps": "10-12",
+              "weight_kg": -25
+            }
+          ]
+        },
+        {
+          "exercise": "Seated Cable Row",
+          "sets": 3,
+          "reps": "8-10",
+          "weight_kg": 80,
+          "alternatives": [
+            {
+              "exercise": "Chest-Supported Row",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 75
+            },
+            {
+              "exercise": "Machine Row",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 80
+            }
+          ]
+        },
+        {
+          "exercise": "Rear Delt Flyes",
+          "sets": 2,
+          "reps": "12-15",
+          "weight_kg": 14,
+          "alternatives": [
+            {
+              "exercise": "Face Pulls",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 32
+            },
+            {
+              "exercise": "Reverse Pec Deck",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 55
+            }
+          ]
+        },
+        {
+          "exercise": "Incline Dumbbell Curl",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 18,
+          "alternatives": [
+            {
+              "exercise": "Preacher Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 35
+            },
+            {
+              "exercise": "Bayesian Cable Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 18
+            }
+          ]
+        },
+        {
+          "exercise": "Hammer Curl",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 20,
+          "alternatives": [
+            {
+              "exercise": "Rope Hammer Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 32
+            },
+            {
+              "exercise": "Cross-Body Hammer Curl",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 22
+            }
+          ]
+        }
+      ]
+    },
+    "Legs B": {
+      "main": [
+        {
+          "exercise": "Romanian Deadlift",
+          "sets": 3,
+          "reps": "6-8",
+          "weight_kg": 130,
+          "alternatives": [
+            {
+              "exercise": "Stiff-Leg Deadlift",
+              "sets": 3,
+              "reps": "6-8",
+              "weight_kg": 120
+            },
+            {
+              "exercise": "Smith Machine Romanian Deadlift",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 120
+            }
+          ]
+        },
+        {
+          "exercise": "Leg Press (High/Wide Foot Placement)",
+          "sets": 3,
+          "reps": "10-12",
+          "weight_kg": 260,
+          "alternatives": [
+            {
+              "exercise": "Hack Squat",
+              "sets": 3,
+              "reps": "8-10",
+              "weight_kg": 150
+            },
+            {
+              "exercise": "Bulgarian Split Squat",
+              "sets": 3,
+              "reps": "10-12",
+              "weight_kg": 30
+            }
+          ]
+        },
+        {
+          "exercise": "Seated Leg Curl",
+          "sets": 3,
+          "reps": "10-12",
+          "weight_kg": 65,
+          "alternatives": [
+            {
+              "exercise": "Lying Leg Curl",
+              "sets": 3,
+              "reps": "10-12",
+              "weight_kg": 60
+            },
+            {
+              "exercise": "Nordic Curl",
+              "sets": 3,
+              "reps": "6-8",
+              "weight_kg": 0
+            }
+          ]
+        },
+        {
+          "exercise": "Leg Extension",
+          "sets": 2,
+          "reps": "12-15",
+          "weight_kg": 80,
+          "alternatives": [
+            {
+              "exercise": "Sissy Squat",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 0
+            },
+            {
+              "exercise": "Spanish Squat",
+              "sets": 2,
+              "reps": "12-15",
+              "weight_kg": 20
+            }
+          ]
+        },
+        {
+          "exercise": "Walking Lunges",
+          "sets": 2,
+          "reps": "10-12",
+          "weight_kg": 24,
+          "alternatives": [
+            {
+              "exercise": "Bulgarian Split Squat",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 28
+            },
+            {
+              "exercise": "Step-Ups",
+              "sets": 2,
+              "reps": "10-12",
+              "weight_kg": 24
+            }
+          ]
+        },
+        {
+          "exercise": "Standing Calf Raise",
+          "sets": 3,
+          "reps": "12-15",
+          "weight_kg": 90,
+          "alternatives": [
+            {
+              "exercise": "Seated Calf Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 60
+            },
+            {
+              "exercise": "Leg Press Calf Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "weight_kg": 180
+            }
+          ]
+        }
+      ]
+    }
+  }

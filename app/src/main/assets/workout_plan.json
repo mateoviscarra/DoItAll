@@ -12,43 +12,90 @@
       "id": "push",
       "name": "Push",
       "exercises": [
-        { "id": "dips", "name": "Dips", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "Bodyweight" },
-        { "id": "barbell_bench_press", "name": "Barbell bench press", "defaultSets": 3, "defaultReps": "6", "defaultLoad": "80 kg" },
-        { "id": "incline_dumbbell_press", "name": "Incline dumbbell press", "defaultSets": 2, "defaultReps": "10", "defaultLoad": "32 kg each" },
-        { "id": "seated_db_lateral_raise", "name": "Seated dumbbell lateral raises", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "14 kg each" },
-        { "id": "cable_triceps_ext", "name": "Overhead cable triceps extension", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "30 kg" },
-        { "id": "cable_triceps_pushdown", "name": "Cable triceps pushdown", "defaultSets": 2, "defaultReps": "10", "defaultLoad": "35 kg" },
-        { "id": "incline_db_flies", "name": "Incline dumbbell flies", "defaultSets": 2, "defaultReps": "12", "defaultLoad": "20 kg" },
-        { "id": "push_ups", "name": "Push-ups", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "Bodyweight" },
-        { "id": "machine_chest_press", "name": "Machine chest press", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" }
+        { "id": "barbell_bench_press", "name": "Barbell Bench Press", "defaultSets": 3, "defaultReps": "6-8", "defaultLoad": "90 kg" },
+        { "id": "incline_dumbbell_press", "name": "Incline Dumbbell Press", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "34 kg" },
+        { "id": "weighted_dips", "name": "Weighted Dips", "defaultSets": 2, "defaultReps": "8-10", "defaultLoad": "20 kg" },
+        { "id": "seated_db_lateral_raise", "name": "Seated Dumbbell Lateral Raise", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "12 kg" },
+        { "id": "overhead_cable_tricep_extension", "name": "Overhead Cable Tricep Extension", "defaultSets": 3, "defaultReps": "10-12", "defaultLoad": "32 kg" },
+        { "id": "cable_tricep_pushdown", "name": "Cable Tricep Pushdown", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "40 kg" },
+        { "id": "incline_barbell_press", "name": "Incline Barbell Press", "defaultSets": 3, "defaultReps": "6-8", "defaultLoad": "75 kg" },
+        { "id": "incline_smith_machine_press", "name": "Incline Smith Machine Press", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "80 kg" },
+        { "id": "assisted_dips", "name": "Assisted Dips", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "-25 kg" },
+        { "id": "decline_push_ups", "name": "Decline Push-Ups", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "Bodyweight" },
+        { "id": "cable_lateral_raise", "name": "Cable Lateral Raise", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "10 kg" },
+        { "id": "machine_lateral_raise", "name": "Machine Lateral Raise", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "45 kg" },
+        { "id": "overhead_dumbbell_tricep_extension", "name": "Overhead Dumbbell Tricep Extension", "defaultSets": 3, "defaultReps": "10-12", "defaultLoad": "28 kg" },
+        { "id": "ez_bar_skull_crushers", "name": "EZ-Bar Skull Crushers", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "40 kg" },
+        { "id": "straight_bar_pushdown", "name": "Straight-Bar Pushdown", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "42 kg" },
+        { "id": "close_grip_push_ups", "name": "Close-Grip Push-Ups", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "Bodyweight" },
+        { "id": "dumbbell_bench_press", "name": "Dumbbell Bench Press", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "40 kg" },
+        { "id": "machine_chest_press", "name": "Machine Chest Press", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "85 kg" },
+        { "id": "seated_dumbbell_shoulder_press", "name": "Seated Dumbbell Shoulder Press", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "30 kg" },
+        { "id": "machine_shoulder_press", "name": "Machine Shoulder Press", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "70 kg" },
+        { "id": "smith_machine_shoulder_press", "name": "Smith Machine Shoulder Press", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "75 kg" },
+        { "id": "cable_flyes", "name": "Cable Flyes", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "18 kg" },
+        { "id": "pec_deck", "name": "Pec Deck", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "65 kg" },
+        { "id": "dumbbell_flyes", "name": "Dumbbell Flyes", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "18 kg" },
+        { "id": "rope_pushdown", "name": "Rope Pushdown", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "38 kg" },
+        { "id": "dips", "name": "Dips", "defaultSets": 2, "defaultReps": "8-10", "defaultLoad": "15 kg" },
+        { "id": "assisted_dips_pushb", "name": "Assisted Dips", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "-20 kg" },
+        { "id": "close_grip_bench_press", "name": "Close-Grip Bench Press", "defaultSets": 2, "defaultReps": "8-10", "defaultLoad": "75 kg" }
       ]
     },
     {
       "id": "pull",
       "name": "Pull",
       "exercises": [
-        { "id": "pull_ups", "name": "Pull-ups", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "Bodyweight" },
-        { "id": "tbar_row", "name": "T-bar row (neutral grip)", "defaultSets": 2, "defaultReps": "9", "defaultLoad": "50 kg" },
-        { "id": "face_pulls", "name": "Face pulls", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "25 kg" },
-        { "id": "barbell_curl", "name": "Barbell curl", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "30 kg" },
-        { "id": "hammer_curl", "name": "Hammer curl", "defaultSets": 2, "defaultReps": "12", "defaultLoad": "16 kg each" },
-        { "id": "lat_pulldown", "name": "Lat pulldown", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" },
-        { "id": "cable_row", "name": "Seated cable row", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "50 kg" },
-        { "id": "rdl", "name": "Romanian deadlift", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" }
+        { "id": "pull_ups", "name": "Pull-Ups", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "10 kg" },
+        { "id": "chest_supported_tbar_row", "name": "Chest-Supported T-Bar Row", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "70 kg" },
+        { "id": "seated_cable_row", "name": "Seated Cable Row", "defaultSets": 2, "defaultReps": "8-10", "defaultLoad": "75 kg" },
+        { "id": "face_pulls", "name": "Face Pulls", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "32 kg" },
+        { "id": "barbell_curl", "name": "Barbell Curl", "defaultSets": 2, "defaultReps": "8-10", "defaultLoad": "40 kg" },
+        { "id": "hammer_curl", "name": "Hammer Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "20 kg" },
+        { "id": "lat_pulldowns", "name": "Lat Pulldowns", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "75 kg" },
+        { "id": "assisted_pull_ups", "name": "Assisted Pull-Ups", "defaultSets": 3, "defaultReps": "10-12", "defaultLoad": "-25 kg" },
+        { "id": "chest_supported_dumbbell_row", "name": "Chest-Supported Dumbbell Row", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "36 kg" },
+        { "id": "machine_row", "name": "Machine Row", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "75 kg" },
+        { "id": "one_arm_dumbbell_row", "name": "One-Arm Dumbbell Row", "defaultSets": 2, "defaultReps": "8-10", "defaultLoad": "42 kg" },
+        { "id": "barbell_row", "name": "Barbell Row", "defaultSets": 2, "defaultReps": "6-8", "defaultLoad": "85 kg" },
+        { "id": "reverse_pec_deck", "name": "Reverse Pec Deck", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "55 kg" },
+        { "id": "rear_delt_cable_flyes", "name": "Rear Delt Cable Flyes", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "12 kg" },
+        { "id": "ez_bar_curl", "name": "EZ-Bar Curl", "defaultSets": 2, "defaultReps": "8-10", "defaultLoad": "35 kg" },
+        { "id": "machine_curl", "name": "Machine Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "40 kg" },
+        { "id": "rope_hammer_curl", "name": "Rope Hammer Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "32 kg" },
+        { "id": "cross_body_hammer_curl", "name": "Cross-Body Hammer Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "22 kg" },
+        { "id": "romanian_deadlift", "name": "Romanian Deadlift", "defaultSets": 3, "defaultReps": "6-8", "defaultLoad": "130 kg" },
+        { "id": "stiff_leg_deadlift", "name": "Stiff-Leg Deadlift", "defaultSets": 3, "defaultReps": "6-8", "defaultLoad": "120 kg" },
+        { "id": "smith_machine_romanian_deadlift", "name": "Smith Machine Romanian Deadlift", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "120 kg" },
+        { "id": "chest_supported_row", "name": "Chest-Supported Row", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "75 kg" },
+        { "id": "rear_delt_flyes", "name": "Rear Delt Flyes", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "14 kg" },
+        { "id": "incline_dumbbell_curl", "name": "Incline Dumbbell Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "18 kg" },
+        { "id": "preacher_curl", "name": "Preacher Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "35 kg" },
+        { "id": "bayesian_cable_curl", "name": "Bayesian Cable Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "18 kg" }
       ]
     },
     {
       "id": "legs",
       "name": "Legs",
       "exercises": [
-        { "id": "squat", "name": "Barbell squat", "defaultSets": 3, "defaultReps": "8", "defaultLoad": "80 kg" },
-        { "id": "leg_press", "name": "Leg press", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "120 kg" },
-        { "id": "leg_extension", "name": "Leg extension", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "40 kg" },
-        { "id": "leg_curl", "name": "Lying leg curl", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "35 kg" },
-        { "id": "calf_raise", "name": "Standing calf raise", "defaultSets": 3, "defaultReps": "15", "defaultLoad": "40 kg" },
-        { "id": "hip_thrust", "name": "Hip thrust", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "60 kg" },
-        { "id": "goblet_squat", "name": "Goblet squat", "defaultSets": 3, "defaultReps": "12", "defaultLoad": "24 kg" },
-        { "id": "bulgarian_split_squat", "name": "Bulgarian split squat", "defaultSets": 3, "defaultReps": "10", "defaultLoad": "20 kg" }
+        { "id": "barbell_squat", "name": "Barbell Squat", "defaultSets": 3, "defaultReps": "6-8", "defaultLoad": "120 kg" },
+        { "id": "leg_press", "name": "Leg Press", "defaultSets": 3, "defaultReps": "10-12", "defaultLoad": "240 kg" },
+        { "id": "bulgarian_split_squat", "name": "Bulgarian Split Squat", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "28 kg" },
+        { "id": "leg_extension", "name": "Leg Extension", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "75 kg" },
+        { "id": "lying_leg_curl", "name": "Lying Leg Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "55 kg" },
+        { "id": "standing_calf_raise", "name": "Standing Calf Raise", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "90 kg" },
+        { "id": "smith_machine_squat", "name": "Smith Machine Squat", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "110 kg" },
+        { "id": "hack_squat", "name": "Hack Squat", "defaultSets": 3, "defaultReps": "8-10", "defaultLoad": "140 kg" },
+        { "id": "goblet_squat", "name": "Goblet Squat", "defaultSets": 3, "defaultReps": "10-12", "defaultLoad": "40 kg" },
+        { "id": "walking_lunges", "name": "Walking Lunges", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "24 kg" },
+        { "id": "step_ups", "name": "Step-Ups", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "24 kg" },
+        { "id": "sissy_squat", "name": "Sissy Squat", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "Bodyweight" },
+        { "id": "spanish_squat", "name": "Spanish Squat", "defaultSets": 2, "defaultReps": "12-15", "defaultLoad": "20 kg" },
+        { "id": "seated_leg_curl", "name": "Seated Leg Curl", "defaultSets": 2, "defaultReps": "10-12", "defaultLoad": "60 kg" },
+        { "id": "nordic_curl", "name": "Nordic Curl", "defaultSets": 2, "defaultReps": "6-8", "defaultLoad": "Bodyweight" },
+        { "id": "seated_calf_raise", "name": "Seated Calf Raise", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "60 kg" },
+        { "id": "leg_press_calf_raise", "name": "Leg Press Calf Raise", "defaultSets": 3, "defaultReps": "12-15", "defaultLoad": "180 kg" },
+        { "id": "leg_press_high_wide", "name": "Leg Press (High/Wide Foot Placement)", "defaultSets": 3, "defaultReps": "10-12", "defaultLoad": "260 kg" }
       ]
     },
     {
@@ -71,25 +118,12 @@
       "muscle_groups": ["chest", "shoulders", "triceps"],
       "is_rest_day": false,
       "exercises": [
-        { "exerciseId": "dips" },
-        { "exerciseId": "barbell_bench_press", "alternatives": ["machine_chest_press", "push_ups"] },
-        { "exerciseId": "incline_dumbbell_press" },
-        { "exerciseId": "seated_db_lateral_raise" },
-        { "exerciseId": "cable_triceps_ext" },
-        { "exerciseId": "cable_triceps_pushdown" }
-      ]
-    },
-    {
-      "day": "Push B",
-      "muscle_groups": ["chest", "shoulders", "triceps"],
-      "is_rest_day": false,
-      "exercises": [
-        { "exerciseId": "push_ups" },
-        { "exerciseId": "incline_db_flies" },
-        { "exerciseId": "machine_chest_press" },
-        { "exerciseId": "seated_db_lateral_raise" },
-        { "exerciseId": "cable_triceps_pushdown" },
-        { "exerciseId": "dips" }
+        { "exerciseId": "barbell_bench_press", "alternatives": ["dumbbell_bench_press", "machine_chest_press"] },
+        { "exerciseId": "incline_dumbbell_press", "alternatives": ["incline_barbell_press", "incline_smith_machine_press"] },
+        { "exerciseId": "weighted_dips", "alternatives": ["assisted_dips", "decline_push_ups"] },
+        { "exerciseId": "seated_db_lateral_raise", "alternatives": ["cable_lateral_raise", "machine_lateral_raise"] },
+        { "exerciseId": "overhead_cable_tricep_extension", "alternatives": ["overhead_dumbbell_tricep_extension", "ez_bar_skull_crushers"] },
+        { "exerciseId": "cable_tricep_pushdown", "alternatives": ["straight_bar_pushdown", "close_grip_push_ups"] }
       ]
     },
     {
@@ -98,25 +132,12 @@
       "is_rest_day": false,
       "notes": ["Use straps"],
       "exercises": [
-        { "exerciseId": "pull_ups" },
-        { "exerciseId": "tbar_row", "alternatives": ["cable_row"] },
-        { "exerciseId": "face_pulls" },
-        { "exerciseId": "barbell_curl" },
-        { "exerciseId": "hammer_curl" },
-        { "exerciseId": "lat_pulldown" }
-      ]
-    },
-    {
-      "day": "Pull B",
-      "muscle_groups": ["back", "biceps", "rear delts"],
-      "is_rest_day": false,
-      "exercises": [
-        { "exerciseId": "lat_pulldown" },
-        { "exerciseId": "rdl" },
-        { "exerciseId": "face_pulls" },
-        { "exerciseId": "hammer_curl" },
-        { "exerciseId": "cable_row" },
-        { "exerciseId": "pull_ups" }
+        { "exerciseId": "pull_ups", "alternatives": ["lat_pulldowns", "assisted_pull_ups"] },
+        { "exerciseId": "chest_supported_tbar_row", "alternatives": ["chest_supported_dumbbell_row", "machine_row"] },
+        { "exerciseId": "seated_cable_row", "alternatives": ["one_arm_dumbbell_row", "barbell_row"] },
+        { "exerciseId": "face_pulls", "alternatives": ["reverse_pec_deck", "rear_delt_cable_flyes"] },
+        { "exerciseId": "barbell_curl", "alternatives": ["ez_bar_curl", "machine_curl"] },
+        { "exerciseId": "hammer_curl", "alternatives": ["rope_hammer_curl", "cross_body_hammer_curl"] }
       ]
     },
     {
@@ -124,11 +145,39 @@
       "muscle_groups": ["quads", "hamstrings", "glutes", "calves"],
       "is_rest_day": false,
       "exercises": [
-        { "exerciseId": "squat" },
-        { "exerciseId": "leg_press" },
-        { "exerciseId": "leg_extension" },
-        { "exerciseId": "leg_curl" },
-        { "exerciseId": "calf_raise" }
+        { "exerciseId": "barbell_squat", "alternatives": ["smith_machine_squat", "hack_squat"] },
+        { "exerciseId": "leg_press", "alternatives": ["hack_squat", "goblet_squat"] },
+        { "exerciseId": "bulgarian_split_squat", "alternatives": ["walking_lunges", "step_ups"] },
+        { "exerciseId": "leg_extension", "alternatives": ["sissy_squat", "spanish_squat"] },
+        { "exerciseId": "lying_leg_curl", "alternatives": ["seated_leg_curl", "nordic_curl"] },
+        { "exerciseId": "standing_calf_raise", "alternatives": ["seated_calf_raise", "leg_press_calf_raise"] }
+      ]
+    },
+    {
+      "day": "Push B",
+      "muscle_groups": ["chest", "shoulders", "triceps"],
+      "is_rest_day": false,
+      "exercises": [
+        { "exerciseId": "incline_dumbbell_press", "alternatives": ["incline_barbell_press", "incline_smith_machine_press"] },
+        { "exerciseId": "seated_dumbbell_shoulder_press", "alternatives": ["machine_shoulder_press", "smith_machine_shoulder_press"] },
+        { "exerciseId": "cable_flyes", "alternatives": ["pec_deck", "dumbbell_flyes"] },
+        { "exerciseId": "seated_db_lateral_raise", "alternatives": ["cable_lateral_raise", "machine_lateral_raise"] },
+        { "exerciseId": "cable_tricep_pushdown", "alternatives": ["rope_pushdown", "straight_bar_pushdown"] },
+        { "exerciseId": "dips", "alternatives": ["assisted_dips_pushb", "close_grip_bench_press"] }
+      ]
+    },
+    {
+      "day": "Pull B",
+      "muscle_groups": ["back", "biceps", "rear delts"],
+      "is_rest_day": false,
+      "notes": ["Use straps"],
+      "exercises": [
+        { "exerciseId": "romanian_deadlift", "alternatives": ["stiff_leg_deadlift", "smith_machine_romanian_deadlift"] },
+        { "exerciseId": "pull_ups", "alternatives": ["lat_pulldowns", "assisted_pull_ups"] },
+        { "exerciseId": "seated_cable_row", "alternatives": ["chest_supported_row", "machine_row"] },
+        { "exerciseId": "rear_delt_flyes", "alternatives": ["face_pulls", "reverse_pec_deck"] },
+        { "exerciseId": "incline_dumbbell_curl", "alternatives": ["preacher_curl", "bayesian_cable_curl"] },
+        { "exerciseId": "hammer_curl", "alternatives": ["rope_hammer_curl", "cross_body_hammer_curl"] }
       ]
     },
     {
@@ -136,11 +185,12 @@
       "muscle_groups": ["quads", "hamstrings", "glutes", "calves"],
       "is_rest_day": false,
       "exercises": [
-        { "exerciseId": "goblet_squat" },
-        { "exerciseId": "hip_thrust" },
-        { "exerciseId": "leg_curl" },
-        { "exerciseId": "bulgarian_split_squat" },
-        { "exerciseId": "calf_raise" }
+        { "exerciseId": "romanian_deadlift", "alternatives": ["stiff_leg_deadlift", "smith_machine_romanian_deadlift"] },
+        { "exerciseId": "leg_press_high_wide", "alternatives": ["hack_squat", "bulgarian_split_squat"] },
+        { "exerciseId": "seated_leg_curl", "alternatives": ["lying_leg_curl", "nordic_curl"] },
+        { "exerciseId": "leg_extension", "alternatives": ["sissy_squat", "spanish_squat"] },
+        { "exerciseId": "walking_lunges", "alternatives": ["bulgarian_split_squat", "step_ups"] },
+        { "exerciseId": "standing_calf_raise", "alternatives": ["seated_calf_raise", "leg_press_calf_raise"] }
       ]
     },
     {

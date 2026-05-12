@@ -141,6 +141,7 @@ private fun EditDayDialog(
 ) {
     var exercises by remember { mutableStateOf(day.exercises) }
     var showAddExerciseDialog by remember { mutableStateOf(false) }
+    var editingExerciseIndex by remember { mutableStateOf<Int?>(null) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -149,30 +150,41 @@ private fun EditDayDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 exercises.forEachIndexed { index, dayEx ->
                     val exercise = allExercises.find { it.id == dayEx.exerciseId }
-                    Row(
+                    Surface(
+                        onClick = { editingExerciseIndex = index },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = exercise?.name ?: dayEx.exerciseId,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            if (dayEx.alternatives.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Alts: ${dayEx.alternatives.joinToString { altId -> 
-                                        allExercises.find { it.id == altId }?.name ?: altId 
-                                    }}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    text = exercise?.name ?: dayEx.exerciseId,
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
+                                if (dayEx.alternatives.isNotEmpty()) {
+                                    Text(
+                                        text = "Alts: ${dayEx.alternatives.joinToString { altId -> 
+                                            allExercises.find { it.id == altId }?.name ?: altId 
+                                        }}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
-                        }
-                        IconButton(onClick = { 
-                            exercises = exercises.toMutableList().also { it.removeAt(index) }
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Remove")
+                            Row {
+                                IconButton(onClick = { 
+                                    exercises = exercises.toMutableList().also { it.removeAt(index) }
+                                }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
+                                }
+                            }
                         }
                     }
                 }
@@ -206,6 +218,22 @@ private fun EditDayDialog(
                 showAddExerciseDialog = false
             },
             onDismiss = { showAddExerciseDialog = false }
+        )
+    }
+    
+    editingExerciseIndex?.let { index ->
+        val dayEx = exercises[index]
+        val mainExercise = allExercises.find { it.id == dayEx.exerciseId }
+        ManageAlternativesDialog(
+            mainExerciseName = mainExercise?.name ?: dayEx.exerciseId,
+            alternatives = dayEx.alternatives,
+            allExercises = allExercises,
+            onAlternativesChanged = { newAlternatives ->
+                exercises = exercises.toMutableList().also {
+                    it[index] = dayEx.copy(alternatives = newAlternatives)
+                }
+            },
+            onDismiss = { editingExerciseIndex = null }
         )
     }
 }
@@ -255,4 +283,85 @@ private fun SelectExerciseDialog(
             }
         }
     )
+}
+
+@Composable
+private fun ManageAlternativesDialog(
+    mainExerciseName: String,
+    alternatives: List<String>,
+    allExercises: List<CategoryExercise>,
+    onAlternativesChanged: (List<String>) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var showAddAlternativeDialog by remember { mutableStateOf(false) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Alternatives: $mainExerciseName") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (alternatives.isEmpty()) {
+                    Text(
+                        text = "No alternatives added yet",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    alternatives.forEach { altId ->
+                        val altExercise = allExercises.find { it.id == altId }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = altExercise?.name ?: altId,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = { 
+                                onAlternativesChanged(alternatives - altId)
+                            }) {
+                                Icon(
+                                    Icons.Default.Delete, 
+                                    contentDescription = "Remove",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                Divider()
+                
+                TextButton(
+                    onClick = { showAddAlternativeDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Add Alternative")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Done")
+            }
+        },
+        dismissButton = {}
+    )
+    
+    if (showAddAlternativeDialog) {
+        SelectExerciseDialog(
+            exercises = allExercises.filter { ex -> 
+                ex.name != mainExerciseName && ex.id !in alternatives 
+            },
+            onSelect = { exerciseId ->
+                onAlternativesChanged(alternatives + exerciseId)
+                showAddAlternativeDialog = false
+            },
+            onDismiss = { showAddAlternativeDialog = false }
+        )
+    }
 }
